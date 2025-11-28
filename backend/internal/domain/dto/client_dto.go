@@ -1,0 +1,110 @@
+package dto
+
+import (
+	"encoding/json"
+
+	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/models"
+	"gorm.io/datatypes"
+)
+
+type CreateClientRequest struct {
+	FirstName string                 `json:"first_name" validate:"required,min=1,max=100"`
+	LastName  string                 `json:"last_name" validate:"required,min=1,max=100"`
+	BirthDate string                 `json:"birth_date" validate:"required"`
+	CoreData  map[string]interface{} `json:"core_data,omitempty"`
+	Features  map[string]interface{} `json:"features,omitempty"`
+}
+
+type UpdateClientRequest struct {
+	FirstName string                 `json:"first_name" validate:"omitempty,min=1,max=100"`
+	LastName  string                 `json:"last_name" validate:"omitempty,min=1,max=100"`
+	BirthDate string                 `json:"birth_date" validate:"omitempty"`
+	CoreData  map[string]interface{} `json:"core_data,omitempty"`
+	Features  map[string]interface{} `json:"features,omitempty"`
+}
+
+type ClientResponse struct {
+	ID        int64                  `json:"id"`
+	FirstName string                 `json:"first_name"`
+	LastName  string                 `json:"last_name"`
+	BirthDate string                 `json:"birth_date"`
+	CoreData  map[string]interface{} `json:"core_data,omitempty"`
+	Features  map[string]interface{} `json:"features,omitempty"`
+	CreatedAt string                 `json:"created_at"`
+	UpdatedAt string                 `json:"updated_at"`
+}
+
+type SearchParams struct {
+	FirstName string `json:"first_name" form:"first_name"`
+	LastName  string `json:"last_name" form:"last_name"`
+	BirthDate string `json:"birth_date" form:"birth_date"`
+}
+
+func (s SearchParams) IsEmpty() bool {
+	return s.FirstName == "" && s.LastName == "" && s.BirthDate == ""
+}
+
+func (r *CreateClientRequest) ToModel() (*models.Client, error) {
+	client := &models.Client{
+		FirstName: r.FirstName,
+		LastName:  r.LastName,
+		BirthDate: r.BirthDate,
+	}
+
+	if r.CoreData != nil {
+		coreDataJSON, err := json.Marshal(r.CoreData)
+		if err != nil {
+			return nil, err
+		}
+		client.CoreData = datatypes.JSON(coreDataJSON)
+	}
+
+	if r.Features != nil {
+		featuresJSON, err := json.Marshal(r.Features)
+		if err != nil {
+			return nil, err
+		}
+		client.Features = datatypes.JSON(featuresJSON)
+	}
+
+	return client, nil
+}
+
+func FromModel(client *models.Client) (*ClientResponse, error) {
+	response := &ClientResponse{
+		ID:        client.ID,
+		FirstName: client.FirstName,
+		LastName:  client.LastName,
+		BirthDate: client.BirthDate,
+		CreatedAt: client.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		UpdatedAt: client.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+	}
+
+	if len(client.CoreData) > 0 {
+		var coreData map[string]interface{}
+		if err := json.Unmarshal(client.CoreData, &coreData); err == nil {
+			response.CoreData = coreData
+		}
+	}
+
+	if len(client.Features) > 0 {
+		var features map[string]interface{}
+		if err := json.Unmarshal(client.Features, &features); err == nil {
+			response.Features = features
+		}
+	}
+
+	return response, nil
+}
+
+func FromModels(clients []models.Client) ([]*ClientResponse, error) {
+	responses := make([]*ClientResponse, 0, len(clients))
+	for _, client := range clients {
+		response, err := FromModel(&client)
+		if err != nil {
+			return nil, err
+		}
+		responses = append(responses, response)
+	}
+	return responses, nil
+}
