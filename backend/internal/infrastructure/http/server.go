@@ -6,12 +6,14 @@ import (
 	"net/http"
 	"time"
 
+	_ "github.com/Godrik0/HackChange-Alpha/backend/docs"
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/config"
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/interfaces"
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/infrastructure/http/handlers"
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/infrastructure/http/middleware"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Server struct {
@@ -53,6 +55,7 @@ func (s *Server) setupRouter() {
 	r.Use(chimiddleware.Timeout(60 * time.Second))
 
 	r.Get("/health", s.healthCheckHandler)
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/clients", func(r chi.Router) {
@@ -77,6 +80,13 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return s.server.Shutdown(ctx)
 }
 
+// healthCheckHandler проверяет состояние сервиса
+// @Summary      Проверка здоровья сервиса
+// @Description  Возвращает статус работоспособности API
+// @Tags         health
+// @Produce      json
+// @Success      200  {object}  map[string]string
+// @Router       /health [get]
 func (s *Server) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

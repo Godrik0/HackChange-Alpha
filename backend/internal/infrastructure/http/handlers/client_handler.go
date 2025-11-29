@@ -26,6 +26,17 @@ func NewClientHandler(clientService interfaces.ClientService, scoringService int
 	}
 }
 
+// GetClient получает клиента по ID
+// @Summary      Получение клиента
+// @Description  Возвращает полные данные клиента по его ID
+// @Tags         clients
+// @Produce      json
+// @Param        id   path      int  true  "Client ID"
+// @Success      200  {object}  dto.ClientResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Router       /api/clients/{id} [get]
 func (h *ClientHandler) GetClient(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -56,6 +67,18 @@ func (h *ClientHandler) GetClient(w http.ResponseWriter, r *http.Request) {
 	h.respondJSON(w, http.StatusOK, response)
 }
 
+// SearchClients ищет клиентов
+// @Summary      Поиск клиентов
+// @Description  Поиск по ФИО и дате рождения (формат даты: DD-MM-YYYY). Требуется хотя бы один параметр.
+// @Tags         clients
+// @Produce      json
+// @Param        first_name query     string  false  "Имя (частичное совпадение)"
+// @Param        last_name  query     string  false  "Фамилия (частичное совпадение)"
+// @Param        birth_date query     string  false  "Дата рождения (DD-MM-YYYY)"
+// @Success      200        {array}   dto.ClientSearchResponse
+// @Failure      400        {object}  dto.ErrorResponse
+// @Failure      500        {object}  dto.ErrorResponse
+// @Router       /api/clients/search [get]
 func (h *ClientHandler) SearchClients(w http.ResponseWriter, r *http.Request) {
 	params := dto.SearchParams{
 		FirstName: r.URL.Query().Get("first_name"),
@@ -79,6 +102,17 @@ func (h *ClientHandler) SearchClients(w http.ResponseWriter, r *http.Request) {
 	h.respondJSON(w, http.StatusOK, responses)
 }
 
+// CalculateScoring рассчитывает скоринг клиента
+// @Summary      Расчет ML-скоринга
+// @Description  Запускает ML-модель для расчета скора клиента и получения рекомендаций
+// @Tags         scoring
+// @Produce      json
+// @Param        id   path      int  true  "Client ID"
+// @Success      200  {object}  dto.ScoringResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Router       /api/clients/{id}/scoring [get]
 func (h *ClientHandler) CalculateScoring(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -108,6 +142,17 @@ func (h *ClientHandler) CalculateScoring(w http.ResponseWriter, r *http.Request)
 	h.respondJSON(w, http.StatusOK, response)
 }
 
+// CreateClient создает нового клиента
+// @Summary      Создание клиента
+// @Description  Создает нового клиента с переданными данными (ФИО, дата рождения, признаки для ML)
+// @Tags         clients
+// @Accept       json
+// @Produce      json
+// @Param        input body dto.CreateClientRequest true "Данные клиента"
+// @Success      201  {object}  dto.ClientResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Router       /api/clients [post]
 func (h *ClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateClientRequest
 
@@ -134,6 +179,19 @@ func (h *ClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
 	h.respondJSON(w, http.StatusCreated, response)
 }
 
+// UpdateClient обновляет данные клиента
+// @Summary      Обновление клиента
+// @Description  Обновляет данные существующего клиента. Все поля опциональны.
+// @Tags         clients
+// @Accept       json
+// @Produce      json
+// @Param        id    path   int                      true  "Client ID"
+// @Param        input body   dto.UpdateClientRequest  true  "Данные для обновления"
+// @Success      200  {object}  dto.ClientResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Router       /api/clients/{id} [put]
 func (h *ClientHandler) UpdateClient(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -171,6 +229,17 @@ func (h *ClientHandler) UpdateClient(w http.ResponseWriter, r *http.Request) {
 	h.respondJSON(w, http.StatusOK, response)
 }
 
+// DeleteClient удаляет клиента
+// @Summary      Удаление клиента
+// @Description  Удаляет клиента из базы данных по его ID
+// @Tags         clients
+// @Produce      json
+// @Param        id   path      int  true  "Client ID"
+// @Success      200  {object}  dto.SuccessResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Router       /api/clients/{id} [delete]
 func (h *ClientHandler) DeleteClient(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 64)

@@ -18,7 +18,7 @@ docker-compose up -d --build
 
 - **Backend API**: http://localhost:8080
 - **PostgreSQL**: localhost:5432
-- **API Docs**: см. `backend/openapi.yml`
+- **API Docs**: http://localhost:8080/swagger/index.html
 
 ### Остановка
 

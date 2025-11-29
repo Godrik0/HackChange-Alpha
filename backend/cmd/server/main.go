@@ -12,6 +12,12 @@ import (
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/infrastructure/container"
 )
 
+// @title HackChange-Alpha API
+// @version 1.0
+// @description API для управления клиентами и расчета ML-скоринга
+// @license.name MIT
+// @host localhost:8080
+// @BasePath /
 func main() {
 	cfg, err := config.Load()
 	if err != nil {

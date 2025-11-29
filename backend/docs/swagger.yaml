@@ -1,0 +1,325 @@
+basePath: /
+definitions:
+  dto.ClientResponse:
+    properties:
+      birth_date:
+        type: string
+      features:
+        additionalProperties: true
+        type: object
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      middle_name:
+        type: string
+    type: object
+  dto.ClientSearchResponse:
+    properties:
+      birth_date:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      middle_name:
+        type: string
+    type: object
+  dto.CreateClientRequest:
+    properties:
+      birth_date:
+        type: string
+      features:
+        additionalProperties: true
+        type: object
+      first_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      last_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      middle_name:
+        maxLength: 100
+        type: string
+    required:
+    - birth_date
+    - first_name
+    - last_name
+    type: object
+  dto.ErrorResponse:
+    properties:
+      code:
+        type: string
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  dto.ScoringResponse:
+    properties:
+      factors:
+        additionalProperties:
+          format: float64
+          type: number
+        type: object
+      recommendations:
+        items:
+          type: string
+        type: array
+      score:
+        type: number
+    type: object
+  dto.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  dto.UpdateClientRequest:
+    properties:
+      birth_date:
+        type: string
+      features:
+        additionalProperties: true
+        type: object
+      first_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      last_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      middle_name:
+        maxLength: 100
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API для управления клиентами и расчета ML-скоринга
+  license:
+    name: MIT
+  title: HackChange-Alpha API
+  version: "1.0"
+paths:
+  /api/clients:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового клиента с переданными данными (ФИО, дата рождения,
+        признаки для ML)
+      parameters:
+      - description: Данные клиента
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateClientRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.ClientResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Создание клиента
+      tags:
+      - clients
+  /api/clients/{id}:
+    delete:
+      description: Удаляет клиента из базы данных по его ID
+      parameters:
+      - description: Client ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Удаление клиента
+      tags:
+      - clients
+    get:
+      description: Возвращает полные данные клиента по его ID
+      parameters:
+      - description: Client ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ClientResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Получение клиента
+      tags:
+      - clients
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные существующего клиента. Все поля опциональны.
+      parameters:
+      - description: Client ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные для обновления
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateClientRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ClientResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Обновление клиента
+      tags:
+      - clients
+  /api/clients/{id}/scoring:
+    get:
+      description: Запускает ML-модель для расчета скора клиента и получения рекомендаций
+      parameters:
+      - description: Client ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ScoringResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Расчет ML-скоринга
+      tags:
+      - scoring
+  /api/clients/search:
+    get:
+      description: 'Поиск по ФИО и дате рождения (формат даты: DD-MM-YYYY). Требуется
+        хотя бы один параметр.'
+      parameters:
+      - description: Имя (частичное совпадение)
+        in: query
+        name: first_name
+        type: string
+      - description: Фамилия (частичное совпадение)
+        in: query
+        name: last_name
+        type: string
+      - description: Дата рождения (DD-MM-YYYY)
+        in: query
+        name: birth_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.ClientSearchResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Поиск клиентов
+      tags:
+      - clients
+  /health:
+    get:
+      description: Возвращает статус работоспособности API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Проверка здоровья сервиса
+      tags:
+      - health
+swagger: "2.0"
