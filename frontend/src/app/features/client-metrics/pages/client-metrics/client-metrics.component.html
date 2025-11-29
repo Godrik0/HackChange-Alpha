@@ -1,0 +1,37 @@
+<nz-layout>
+  <nz-header style="display:flex; align-items:center; justify-content:space-between;">
+    <div class="logo">
+      <img ngSrc="/logo.svg" alt="logo" routerLink='' style="cursor: pointer;" height="64" width="64">
+    </div>
+    <div class="user-name" style="font-weight:bold; font-size:18px;">
+      ИВАНОВ ИВАН ИВАНОВИЧ
+    </div>
+  </nz-header>
+
+  <nz-content style="padding:24px; max-width: 90%; margin:0 auto;">
+    <nz-card>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <p style="margin:0; font-size:12px; color:gray;">Прогнозируемый доход</p>
+          <h2 style="margin:0;">55 000 ₽</h2>
+        </div>
+        <app-income-chart [data2]="incomeData"></app-income-chart>
+      </div>
+    </nz-card>
+
+    <nz-card style="margin-top:16px;">
+      <p style="font-weight:bold;">Кредитный лимит</p>
+      <app-credit-slider [max]="90000" [optimal]="70000" [(ngModel)]="selectedLimit"></app-credit-slider>
+    </nz-card>
+
+    <nz-card>
+      <app-bullet-points [points]="bulletPoints"></app-bullet-points>
+    </nz-card>
+
+    <nz-row [nzGutter]="16" style="margin-top:16px;">
+      <nz-col *ngFor="let card of actionCards" [nzSpan]="6">
+        <app-action-card [data]="card"></app-action-card>
+      </nz-col>
+    </nz-row>
+  </nz-content>
+</nz-layout>
