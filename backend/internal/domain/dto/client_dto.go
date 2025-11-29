@@ -9,7 +9,7 @@ import (
 	"gorm.io/datatypes"
 )
 
-const DateFormat = "2006-01-02"
+const DateFormat = "02-01-2006"
 
 type CreateClientRequest struct {
 	FirstName string                 `json:"first_name" validate:"required,min=1,max=100"`
@@ -21,7 +21,7 @@ type CreateClientRequest struct {
 type UpdateClientRequest struct {
 	FirstName string                 `json:"first_name" validate:"omitempty,min=1,max=100"`
 	LastName  string                 `json:"last_name" validate:"omitempty,min=1,max=100"`
-	BirthDate string                 `json:"birth_date" validate:"required,datetime=2006-01-02"`
+	BirthDate string                 `json:"birth_date" validate:"required,datetime=02-01-2006"`
 	Features  map[string]interface{} `json:"features,omitempty"`
 }
 
@@ -74,8 +74,8 @@ func FromModel(client *models.Client) (*ClientResponse, error) {
 		FirstName: client.FirstName,
 		LastName:  client.LastName,
 		BirthDate: client.BirthDate.Format(DateFormat),
-		CreatedAt: client.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-		UpdatedAt: client.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		CreatedAt: client.CreatedAt.Format("02-01-2006T15:04:05Z07:00"),
+		UpdatedAt: client.UpdatedAt.Format("02-01-2006T15:04:05Z07:00"),
 	}
 
 	if len(client.Features) > 0 {

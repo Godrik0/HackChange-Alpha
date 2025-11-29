@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/dto"
 	domainerrors "github.com/Godrik0/HackChange-Alpha/backend/internal/domain/errors"
@@ -79,7 +80,10 @@ func (r *clientRepository) Search(ctx context.Context, params dto.SearchParams) 
 	}
 
 	if params.BirthDate != "" {
-		query = query.Where("birth_date = ?", params.BirthDate)
+		parsedDate, err := time.Parse(dto.DateFormat, params.BirthDate)
+		if err == nil {
+			query = query.Where("birth_date = ?", parsedDate)
+		}
 	}
 
 	result := query.Find(&clients)
