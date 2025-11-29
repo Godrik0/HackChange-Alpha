@@ -4,23 +4,18 @@ import (
 	"context"
 
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/interfaces"
+	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/models"
 )
 
 type staticPromoProvider struct {
-	promoActions []PromoAction
-	cards        []PromoAction
-	investment   []PromoAction
-}
-
-type PromoAction struct {
-	MinIncome int64
-	MaxIncome int64
-	Promo     string
+	promoActions []models.PromoAction
+	cards        []models.PromoAction
+	investment   []models.PromoAction
 }
 
 func NewStaticPromoProvider() interfaces.PromoProvider {
 	return &staticPromoProvider{
-		promoActions: []PromoAction{
+		promoActions: []models.PromoAction{
 			{MinIncome: 0, MaxIncome: 30000, Promo: "Дарим 500р за отзыв!"},
 			{MinIncome: 30000, MaxIncome: 60000, Promo: "Бигфест с кэшбэком 50%!"},
 			{MinIncome: 60000, MaxIncome: 120000, Promo: "Пятничный суперкэшбек!"},
@@ -29,7 +24,7 @@ func NewStaticPromoProvider() interfaces.PromoProvider {
 			{MinIncome: 500000, MaxIncome: 1000000, Promo: "Счёт для бизнеса за 0 рублей!"},
 			{MinIncome: 1000000, MaxIncome: 1000000000, Promo: "Дарим платёжное кольцо"},
 		},
-		cards: []PromoAction{
+		cards: []models.PromoAction{
 			{MinIncome: 0, MaxIncome: 30000, Promo: "Альфа-Стикер"},
 			{MinIncome: 30000, MaxIncome: 60000, Promo: "Сверхтонкий стикер с котами"},
 			{MinIncome: 60000, MaxIncome: 120000, Promo: "Карта Альфа и Золотое Яблоко"},
@@ -37,7 +32,7 @@ func NewStaticPromoProvider() interfaces.PromoProvider {
 			{MinIncome: 250000, MaxIncome: 1000000, Promo: "Дебетовая карта Alfa Only Аэрофлот"},
 			{MinIncome: 1000000, MaxIncome: 1000000000, Promo: "Дебетовая карта Alfa Only"},
 		},
-		investment: []PromoAction{
+		investment: []models.PromoAction{
 			{MinIncome: 0, MaxIncome: 30000, Promo: "Платим 5 000 ₽ каждому"},
 			{MinIncome: 30000, MaxIncome: 60000, Promo: "Старт в инвестициях всего со 100 рублей!"},
 			{MinIncome: 60000, MaxIncome: 120000, Promo: "Платим 10 000 ₽ каждому"},
