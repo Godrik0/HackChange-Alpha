@@ -2,25 +2,30 @@
 
   <nz-flex nzGap="middle" nzAlign="center">
     <nz-avatar
+      style="background-color: #ff4d4f"
       nzSize="large"
-      nzSrc="https://via.placeholder.com/40"
-      nzAlt="{{ client.name }}">
+      nzIcon="user">
     </nz-avatar>
 
     <nz-flex nzVertical>
       <span style="font-weight: 500; font-size: 16px;">
-        {{ client.name }}
+        {{ getFullName(client) }}
       </span>
       <span style="color: #666; font-size: 14px;">
-        {{ client.description }}
+        {{ client.birthDate | date }}
       </span>
     </nz-flex>
   </nz-flex>
 
-  <div style="text-align: right;">
-    <div style="font-size: 18px; font-weight: 600; color: #1890ff;">
-      {{ client.profit | number }} ₽
+  <nz-flex style="text-align: right;"
+    nzVertical="true"
+    nzAlign="start"
+    nzGap="small">
+    <div style="font-size: 18px; font-weight: 600">
+      {{ client.incoming ?? 'Не указано' }} {{ client.incoming ? '₽' : ''}}
     </div>
-  </div>
+
+    <button nz-button [routerLink]="['client', client.id]">Подробнее</button>
+  </nz-flex>
 
 </nz-flex>
