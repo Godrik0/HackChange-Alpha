@@ -22,7 +22,7 @@ services:
 
   backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     container_name: hackchange-backend
     environment:
@@ -49,6 +49,30 @@ services:
     networks:
       - hackchange-network
     restart: unless-stopped
+
+  # ml-service:
+  #   build:
+  #     context: ./ml-service
+  #     dockerfile: Dockerfile
+  #   container_name: hackchange-ml-service
+  #   ports:
+  #     - "5000:5000"
+  #   networks:
+  #     - hackchange-network
+  #   restart: unless-stopped
+
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: hackchange-frontend
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - hackchange-network
+  #   restart: unless-stopped
 
 volumes:
   postgres_data:
