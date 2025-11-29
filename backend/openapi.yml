@@ -1,0 +1,571 @@
+openapi: 3.0.3
+info:
+  title: HackChange-Alpha
+  description: |
+    API для управления клиентами и расчета ML-скоринга.
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+
+tags:
+  - name: clients
+    description: Операции с клиентами
+  - name: scoring
+    description: ML-скоринг клиентов
+  - name: health
+    description: Проверка состояния сервиса
+
+paths:
+  /health:
+    get:
+      tags:
+        - health
+      summary: Проверка здоровья сервиса
+      description: Возвращает статус работоспособности API
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Сервис работает
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+              example:
+                status: ok
+
+  /api/clients:
+    post:
+      tags:
+        - clients
+      summary: Создать нового клиента
+      description: Создает нового клиента с указанными данными
+      operationId: createClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClientRequest'
+            examples:
+              basic:
+                summary: Базовый пример
+                value:
+                  first_name: Иван
+                  last_name: Иванов
+                  birth_date: "15-01-1990"
+              withData:
+                summary: С дополнительными данными
+                value:
+                  first_name: Мария
+                  last_name: Петрова
+                  birth_date: "20-03-1985"
+                  features:
+                    income: 50000
+                    employment_years: 5
+                    credit_history: good
+      responses:
+        '201':
+          description: Клиент успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/clients/{id}:
+    get:
+      tags:
+        - clients
+      summary: Получить клиента по ID
+      description: Возвращает информацию о клиенте по его идентификатору
+      operationId: getClient
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: Клиент найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      tags:
+        - clients
+      summary: Обновить клиента
+      description: Обновляет данные существующего клиента
+      operationId: updateClient
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClientRequest'
+            examples:
+              partial:
+                summary: Частичное обновление
+                value:
+                  first_name: Иван
+                  last_name: Сидоров
+              full:
+                summary: Полное обновление
+                value:
+                  first_name: Петр
+                  last_name: Петров
+                  birth_date: "10-05-1988"
+                  features:
+                    income: 75000
+                    employment_years: 8
+      responses:
+        '200':
+          description: Клиент успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags:
+        - clients
+      summary: Удалить клиента
+      description: Удаляет клиента из базы данных
+      operationId: deleteClient
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: Клиент успешно удален
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                message: client deleted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/clients/search:
+    get:
+      tags:
+        - clients
+      summary: Поиск клиентов
+      description: |
+        Поиск клиентов по заданным параметрам.
+        Необходимо указать хотя бы один параметр поиска.
+        Поиск по имени и фамилии регистронезависимый и поддерживает частичное совпадение.
+      operationId: searchClients
+      parameters:
+        - name: first_name
+          in: query
+          description: Имя клиента (частичное совпадение)
+          schema:
+            type: string
+            minLength: 1
+          example: Иван
+        - name: last_name
+          in: query
+          description: Фамилия клиента (частичное совпадение)
+          schema:
+            type: string
+            minLength: 1
+          example: Иванов
+        - name: middle_name
+          in: query
+          description: Отчество клиента (частичное совпадение)
+          schema:
+            type: string
+            minLength: 1
+          example: Иванович
+        - name: birth_date
+          in: query
+          description: Дата рождения (точное совпадение, формат DD-MM-YYYY)
+          schema:
+            type: string
+            pattern: '^\d{2}-\d{2}-\d{4}$'
+          example: "15-01-1990"
+      responses:
+        '200':
+          description: Результаты поиска
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientSearchResponse'
+              examples:
+                found:
+                  summary: Найдены клиенты
+                  value:
+                    - id: 1
+                      first_name: Иван
+                      last_name: Иванов
+                      birth_date: "15-01-1990"
+                    - id: 2
+                      first_name: Иван
+                      last_name: Петров
+                      birth_date: "20-03-1992"
+                empty:
+                  summary: Клиенты не найдены
+                  value: []
+        '400':
+          description: Не указаны параметры поиска
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: at least one search parameter is required
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/clients/{id}/scoring:
+    get:
+      tags:
+        - scoring
+      summary: Рассчитать ML-скоринг клиента
+      description: |
+        Выполняет расчет ML-скоринга для указанного клиента.
+        Возвращает оценку (score), рекомендации и факторы, влияющие на оценку.
+      operationId: calculateScoring
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: Скоринг успешно рассчитан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoringResponse'
+              examples:
+                positive:
+                  summary: Положительная оценка
+                  value:
+                    score: 0.85
+                    recommendations:
+                      - Клиент имеет хорошую кредитную историю
+                      - Стабильный доход
+                      - Рекомендуется одобрение
+                    factors:
+                      income: 0.5
+                      credit_history: 0.3
+                      employment_years: 0.2
+                negative:
+                  summary: Отрицательная оценка
+                  value:
+                    score: 0.35
+                    recommendations:
+                      - Недостаточная кредитная история
+                      - Низкий доход
+                      - Рекомендуется отказ
+                    factors:
+                      income: 0.2
+                      credit_history: 0.1
+                      employment_years: 0.05
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  parameters:
+    ClientId:
+      name: id
+      in: path
+      required: true
+      description: Уникальный идентификатор клиента
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+      example: 1
+
+  schemas:
+    CreateClientRequest:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - birth_date
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Имя клиента
+          example: Иван
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Фамилия клиента
+          example: Иванов
+        middle_name:
+          type: string
+          maxLength: 100
+          description: Отчество клиента (опционально)
+          example: Иванович
+        birth_date:
+          type: string
+          pattern: '^\d{2}-\d{2}-\d{4}$'
+          description: Дата рождения в формате DD-MM-YYYY
+          example: "15-01-1990"
+        features:
+          type: object
+          additionalProperties: true
+          description: Признаки для ML-модели (произвольная структура)
+          example:
+            income: 50000
+            employment_years: 5
+            credit_history: good
+            has_car: true
+
+    UpdateClientRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Имя клиента
+          example: Иван
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Фамилия клиента
+          example: Петров
+        middle_name:
+          type: string
+          maxLength: 100
+          description: Отчество клиента
+          example: Петрович
+        birth_date:
+          type: string
+          pattern: '^\d{2}-\d{2}-\d{4}$'
+          description: Дата рождения в формате DD-MM-YYYY
+          example: "15-01-1990"
+        features:
+          type: object
+          additionalProperties: true
+          description: Признаки для ML-модели
+          example:
+            income: 60000
+            employment_years: 6
+
+    ClientResponse:
+      type: object
+      required:
+        - id
+        - first_name
+        - last_name
+        - birth_date
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор клиента
+          example: 1
+        first_name:
+          type: string
+          description: Имя клиента
+          example: Иван
+        last_name:
+          type: string
+          description: Фамилия клиента
+          example: Иванов
+        middle_name:
+          type: string
+          description: Отчество клиента
+          example: Иванович
+        birth_date:
+          type: string
+          pattern: '^\d{2}-\d{2}-\d{4}$'
+          description: Дата рождения в формате DD-MM-YYYY
+          example: "15-01-1990"
+        features:
+          type: object
+          additionalProperties: true
+          description: Признаки для ML-модели
+          example:
+            income: 50000
+            employment_years: 5
+            credit_history: good
+
+    ClientSearchResponse:
+      type: object
+      required:
+        - id
+        - first_name
+        - last_name
+        - birth_date
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор клиента
+          example: 1
+        first_name:
+          type: string
+          description: Имя клиента
+          example: Иван
+        last_name:
+          type: string
+          description: Фамилия клиента
+          example: Иванов
+        middle_name:
+          type: string
+          description: Отчество клиента
+          example: Иванович
+        birth_date:
+          type: string
+          pattern: '^\d{2}-\d{2}-\d{4}$'
+          description: Дата рождения в формате DD-MM-YYYY
+          example: "15-01-1990"
+
+    ScoringResponse:
+      type: object
+      required:
+        - score
+        - recommendations
+        - factors
+      properties:
+        score:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+          description: Оценка клиента (от 0 до 1)
+          example: 0.85
+        recommendations:
+          type: array
+          items:
+            type: string
+          description: Список рекомендаций на основе скоринга
+          example:
+            - Клиент имеет хорошую кредитную историю
+            - Стабильный доход
+            - Рекомендуется одобрение
+        factors:
+          type: object
+          additionalProperties:
+            type: number
+            format: double
+          description: Факторы, влияющие на оценку (название фактора → вес)
+          example:
+            income: 0.5
+            credit_history: 0.3
+            employment_years: 0.2
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Описание ошибки
+          example: client not found
+        message:
+          type: string
+          description: Дополнительное сообщение об ошибке
+          example: Клиент с указанным ID не найден в базе данных
+        code:
+          type: string
+          description: Код ошибки
+          example: NOT_FOUND
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Сообщение об успешной операции
+          example: client deleted successfully
+        data:
+          type: object
+          additionalProperties: true
+          description: Дополнительные данные
+
+  responses:
+    BadRequest:
+      description: Некорректный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            invalidId:
+              summary: Некорректный ID
+              value:
+                error: invalid client ID
+            invalidBody:
+              summary: Некорректное тело запроса
+              value:
+                error: invalid request body
+            missingParams:
+              summary: Отсутствуют параметры
+              value:
+                error: at least one search parameter is required
+
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: client not found
+
+    InternalError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            database:
+              summary: Ошибка базы данных
+              value:
+                error: failed to get client
+                message: Database connection error
+            mlService:
+              summary: Ошибка ML сервиса
+              value:
+                error: failed to calculate scoring
+                message: ML service is unavailable
+            general:
+              summary: Общая ошибка
+              value:
+                error: internal error
