@@ -4,25 +4,11 @@ definitions:
     properties:
       birth_date:
         type: string
-      features:
-        additionalProperties: true
-        type: object
       first_name:
         type: string
       id:
         type: integer
-      last_name:
-        type: string
-      middle_name:
-        type: string
-    type: object
-  dto.ClientSearchResponse:
-    properties:
-      birth_date:
-        type: string
-      first_name:
-        type: string
-      id:
+      income:
         type: integer
       last_name:
         type: string
@@ -298,7 +284,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dto.ClientSearchResponse'
+              $ref: '#/definitions/dto.ClientResponse'
             type: array
         "400":
           description: Bad Request

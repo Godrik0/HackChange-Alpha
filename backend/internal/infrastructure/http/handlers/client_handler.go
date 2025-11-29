@@ -76,7 +76,7 @@ func (h *ClientHandler) GetClient(w http.ResponseWriter, r *http.Request) {
 // @Param        last_name   query     string  false  "Фамилия (частичное совпадение)"
 // @Param        middle_name query     string  false  "Отчество (частичное совпадение)"
 // @Param        birth_date  query     string  false  "Дата рождения (DD-MM-YYYY)"
-// @Success      200         {array}   dto.ClientSearchResponse
+// @Success      200         {array}   dto.ClientResponse
 // @Failure      400         {object}  dto.ErrorResponse
 // @Failure      500         {object}  dto.ErrorResponse
 // @Router       /api/clients/search [get]
@@ -100,7 +100,13 @@ func (h *ClientHandler) SearchClients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responses := dto.FromModelsToSearchResponse(clients)
+	responses, err := dto.FromModels(clients)
+	if err != nil {
+		h.logger.Error("Failed to convert models to DTOs", "error", err)
+		h.respondError(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
 	h.respondJSON(w, http.StatusOK, responses)
 }
 

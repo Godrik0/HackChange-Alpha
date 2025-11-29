@@ -100,7 +100,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.ClientSearchResponse"
+                                "$ref": "#/definitions/dto.ClientResponse"
                             }
                         }
                     },
@@ -346,34 +346,13 @@
                 "birth_date": {
                     "type": "string"
                 },
-                "features": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
                 "first_name": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "last_name": {
-                    "type": "string"
-                },
-                "middle_name": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.ClientSearchResponse": {
-            "type": "object",
-            "properties": {
-                "birth_date": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "id": {
+                "income": {
                     "type": "integer"
                 },
                 "last_name": {
