@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/dto"
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/interfaces"
@@ -67,6 +68,7 @@ func (s *clientService) CalculateScoring(ctx context.Context, id int64) (*models
 	}
 
 	features, err := s.extractFeatures(client)
+	s.logger.Debug("Extracted features", "features", features)
 	if err != nil {
 		s.logger.Error("Failed to extract features", "client_id", id, "error", err)
 		return nil, fmt.Errorf("failed to extract features: %w", err)
@@ -129,7 +131,12 @@ func (s *clientService) UpdateClient(ctx context.Context, id int64, req *dto.Upd
 		client.LastName = req.LastName
 	}
 	if req.BirthDate != "" {
-		client.BirthDate = req.BirthDate
+		parsedDate, err := time.Parse(dto.DateFormat, req.BirthDate)
+		if err != nil {
+			s.logger.Warn("Invalid birth date format", "input", req.BirthDate, "error", err)
+			return nil, fmt.Errorf("invalid birth date format (expected YYYY-MM-DD): %w", err)
+		}
+		client.BirthDate = parsedDate
 	}
 	if req.CoreData != nil {
 		coreDataJSON, err := json.Marshal(req.CoreData)
@@ -195,7 +202,7 @@ func (s *clientService) extractFeatures(client *models.Client) (map[string]inter
 		var coreData map[string]interface{}
 		if err := json.Unmarshal(client.CoreData, &coreData); err == nil {
 			for k, v := range coreData {
-				features["core_"+k] = v
+				features[k] = v
 			}
 		}
 	}
