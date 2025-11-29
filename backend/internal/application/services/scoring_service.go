@@ -33,7 +33,7 @@ func NewScoringService(
 	}
 }
 
-func (s *scoringService) CalculateScoring(ctx context.Context, id int64) (*models.ScoringResult, error) {
+func (s *scoringService) CalculateScoring(ctx context.Context, id int64) (*dto.ScoringResponse, error) {
 	s.logger.Debug("Calculating scoring", "client_id", id)
 
 	client, err := s.clientRepo.GetByID(ctx, id)
@@ -59,21 +59,29 @@ func (s *scoringService) CalculateScoring(ctx context.Context, id int64) (*model
 	recommendations := s.getRecommendations(ctx, mlResponse.Prediction)
 	positiveFactors, negativeFactors := s.splitFactorsBySign(mlResponse.Explanation)
 
-	result := &models.ScoringResult{
-		Score:           mlResponse.Prediction,
-		Recommendations: recommendations,
-		Factors: map[string]float64{
-			"predicted_income": mlResponse.Prediction,
-			"credit_limit":     creditLimit.RecommendationCreditLimit,
-		},
-		PositiveFactors: FormatPositiveFactors(positiveFactors),
-		NegativeFactors: FormatNegativeFactors(negativeFactors),
-		CreditLimit:     creditLimit.RecommendationCreditLimit,
-		MaxCreditLimit:  creditLimit.LimitLegal,
+	clientDTO, err := dto.FromModel(client)
+	if err != nil {
+		s.logger.Error("Failed to convert client to DTO", "error", err)
+		return nil, fmt.Errorf("failed to convert client to DTO: %w", err)
 	}
 
-	s.logger.Info("Scoring calculated successfully", "client_id", id, "score", result.Score)
-	return result, nil
+	response := &dto.ScoringResponse{
+		Id:                        client.ID,
+		FirstName:                 client.FirstName,
+		LastName:                  client.LastName,
+		MiddleName:                client.MiddleName,
+		BirthDate:                 client.BirthDate.Format(dto.DateFormat),
+		Income:                    clientDTO.Income,
+		PredictIncome:             mlResponse.Prediction,
+		RecommendationCreditLimit: creditLimit.RecommendationCreditLimit,
+		MaxCreditLimit:            creditLimit.LimitLegal,
+		Recommendations:           recommendations,
+		PositiveFactors:           FormatPositiveFactors(positiveFactors),
+		NegativeFactors:           FormatNegativeFactors(negativeFactors),
+	}
+
+	s.logger.Info("Scoring calculated successfully", "client_id", id, "score", mlResponse.Prediction)
+	return response, nil
 }
 
 func (s *scoringService) calculateCreditLimit(features map[string]interface{}, predictedIncome float64) dto.CreditLimitResult {
