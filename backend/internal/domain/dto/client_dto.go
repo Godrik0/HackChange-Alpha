@@ -34,8 +34,14 @@ type ClientResponse struct {
 	MiddleName string                 `json:"middle_name,omitempty"`
 	BirthDate  string                 `json:"birth_date"`
 	Features   map[string]interface{} `json:"features,omitempty"`
-	CreatedAt  string                 `json:"created_at"`
-	UpdatedAt  string                 `json:"updated_at"`
+}
+
+type ClientSearchResponse struct {
+	ID         int64  `json:"id"`
+	FirstName  string `json:"first_name"`
+	LastName   string `json:"last_name"`
+	MiddleName string `json:"middle_name,omitempty"`
+	BirthDate  string `json:"birth_date"`
 }
 
 type SearchParams struct {
@@ -79,8 +85,6 @@ func FromModel(client *models.Client) (*ClientResponse, error) {
 		LastName:   client.LastName,
 		MiddleName: client.MiddleName,
 		BirthDate:  client.BirthDate.Format(DateFormat),
-		CreatedAt:  client.CreatedAt.Format("02-01-2006T15:04:05Z07:00"),
-		UpdatedAt:  client.UpdatedAt.Format("02-01-2006T15:04:05Z07:00"),
 	}
 
 	if len(client.Features) > 0 {
@@ -103,4 +107,22 @@ func FromModels(clients []models.Client) ([]*ClientResponse, error) {
 		responses = append(responses, response)
 	}
 	return responses, nil
+}
+
+func FromModelToSearchResponse(client *models.Client) *ClientSearchResponse {
+	return &ClientSearchResponse{
+		ID:         client.ID,
+		FirstName:  client.FirstName,
+		LastName:   client.LastName,
+		MiddleName: client.MiddleName,
+		BirthDate:  client.BirthDate.Format(DateFormat),
+	}
+}
+
+func FromModelsToSearchResponse(clients []models.Client) []*ClientSearchResponse {
+	responses := make([]*ClientSearchResponse, 0, len(clients))
+	for _, client := range clients {
+		responses = append(responses, FromModelToSearchResponse(&client))
+	}
+	return responses
 }

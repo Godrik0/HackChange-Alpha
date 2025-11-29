@@ -75,13 +75,7 @@ func (h *ClientHandler) SearchClients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responses, err := dto.FromModels(clients)
-	if err != nil {
-		h.logger.Error("Failed to convert models to DTOs", "error", err)
-		h.respondError(w, http.StatusInternalServerError, "internal error")
-		return
-	}
-
+	responses := dto.FromModelsToSearchResponse(clients)
 	h.respondJSON(w, http.StatusOK, responses)
 }
 
