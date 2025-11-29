@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { ClientsListComponent } from '../../components/clients-list/clients-list.component';
@@ -9,11 +9,10 @@ import { Client } from '@core/models/client';
   selector: 'app-clients-page',
   standalone: true,
   imports: [
-    CommonModule,
     NzLayoutModule,
     NzCardModule,
     ClientsListComponent
-  ],
+],
   templateUrl: './clients.component.html'
 })
 export class ClientsComponent {

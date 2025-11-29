@@ -1,24 +1,13 @@
+// vite.config.ts
 import { defineConfig } from 'vite';
-import angular from '@angular-devkit/build-angular/plugins/vite';
-import vitePluginImp from 'vite-plugin-imp';
+import angular from '@vitejs/plugin-angular';
 
 export default defineConfig({
-  plugins: [
-    angular(),
-    vitePluginImp({
-      libList: [
-        {
-          libName: 'ng-zorro-antd',
-          style: (name) => `ng-zorro-antd/esm/${name}/style/index.less`
-        }
-      ]
-    })
-  ],
+  plugins: [angular()],
   css: {
     preprocessorOptions: {
       less: {
         modifyVars: {
-          // КРАСНАЯ ТЕМА
           'primary-color': '#dc2626',
           'success-color': '#16a34a',
           'warning-color': '#d97706',
@@ -39,7 +28,6 @@ export default defineConfig({
           'card-head-color': '#111827',
           'card-head-background': '#fef2f2',
           'card-background': '#ffffff',
-          'card-shadow': '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
           'menu-item-active-bg': '#fef2f2',
           'menu-highlight-color': '#dc2626',
           'input-bg': '#ffffff',
@@ -48,7 +36,6 @@ export default defineConfig({
           'tabs-hover-color': '#dc2626',
           'tabs-active-color': '#dc2626',
           'tabs-ink-bar-color': '#dc2626',
-          'tabs-highlight-color': '#dc2626',
           'table-header-bg': '#fef2f2',
           'table-header-color': '#111827',
           'table-row-hover-bg': '#fef2f2'
