@@ -1,23 +1,19 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict
 from datetime import datetime, timezone
 
 
 class PredictionRequest(BaseModel):
-    client_data: dict
-    return_explanation: bool = False
-    user_id: Optional[str] = None
+    model_version: str
+    pipeline_version: str
+    features: Dict[str, float | int | str]
+    user_id: str = "anonymous"
 
 
 class PredictionResponse(BaseModel):
     prediction: float
-    model_version: str
-    status: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    explanation: Optional[List[Dict[str, float]]] = None
-    confidence: Optional[float] = None
-    request_id: Optional[str] = None
-    message: Optional[str] = None
+    explanation: Optional[Dict[str, float]] = None
+    uid: str
 
 
 class HealthResponse(BaseModel):

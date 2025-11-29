@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
+import shap
 from .loader import MODEL, IS_LOADED
+from .feature_descriptions import FEATURE_DESCRIPTIONS
 
 
 def preprocess(raw: dict) -> pd.DataFrame:
@@ -19,9 +21,34 @@ def predict(raw: dict) -> float:
     return run_model(df)
 
 
-def explain(raw: dict, list_is_feature=None):
-    """
-    Возвращает топ-5 признаков с SHAP значениями и пояснениями.
-    list_is_feature — словарь feature -> описание
-    """
-    pass
+def explain_features_split(df_sample, model, top_k=5):
+    explainer = shap.Explainer(model)
+    shap_values = explainer(df_sample)
+
+    values = shap_values.values[0]
+    features = df_sample.columns
+
+    rows = []
+    for feature, val in zip(features, values):
+        rows.append({
+            "feature": feature,
+            "value": float(val),
+            "abs": abs(val),
+            "description": FEATURE_DESCRIPTIONS.get(feature, feature)
+        })
+
+    rows = sorted(rows, key=lambda x: x["abs"], reverse=True)[:top_k]
+
+    positive = {}
+    negative = {}
+
+    for r in rows:
+        if r["value"] > 0:
+            positive[r["description"]] = r["value"]
+        else:
+            negative[r["description"]] = r["value"]
+
+    return {
+        "positive": positive,
+        "negative": negative
+    }

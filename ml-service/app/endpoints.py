@@ -1,41 +1,50 @@
+import pandas as pd
+import logging
 from fastapi import APIRouter, HTTPException
 from uuid import uuid4
 
 from .schemas import PredictionRequest, PredictionResponse, HealthResponse, ModelInfoResponse
-from .inference import predict, explain
+from .inference import predict, explain_features_split
 from .loader import IS_LOADED, MODEL, load_assets
 from .config import settings
 from .utils import logger
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.post("/predict", response_model=PredictionResponse)
+@router.post("/api/predict", response_model=PredictionResponse)
 async def predict_income(request: PredictionRequest):
     if not IS_LOADED:
         raise HTTPException(status_code=503, detail="Model not loaded")
 
-    request_id = request.user_id or str(uuid4())
-    logger.info(f"Prediction request: {request_id}")
+    # Создаем uid для ответа и логов
+    uid = str(uuid4())
+    logger.info(f"Prediction request uid={uid}, user_id={request.user_id}")
 
     try:
-        result = predict(request.client_data)
+        df = pd.DataFrame([request.features])
+    except Exception as e:
+        logger.exception("Failed to convert features to DataFrame")
+        raise HTTPException(status_code=400, detail=f"Invalid features: {e}")
+
+    # Предсказание
+    try:
+        prediction_value = MODEL.predict(df)[0]  # pipeline уже включает препроцессинг
     except Exception as e:
         logger.exception("Prediction failed")
         raise HTTPException(status_code=500, detail=str(e))
 
-    explanation = None
-    if request.return_explanation:
-        explanation = explain(request.client_data, result)
+    try:
+        explanation = explain_features_split(df, MODEL)  # вернет {positive: {...}, negative: {...}}
+    except Exception as e:
+        logger.warning(f"SHAP explanation failed: {e}")
+        explanation = None
 
     return PredictionResponse(
-        prediction=result,
-        model_version=settings.APP_VERSION,
-        status="success",
+        prediction=float(prediction_value),
         explanation=explanation,
-        confidence=0.9,
-        request_id=request_id,
-        message="OK",
+        uid=uid,
     )
 
 
