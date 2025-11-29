@@ -292,3 +292,47 @@ func (h *ClientHandler) DeleteClient(w http.ResponseWriter, r *http.Request) {
 
 	h.respondJSON(w, http.StatusOK, dto.SuccessResponse{Message: "client deleted successfully"})
 }
+
+// ListClients возвращает список клиентов с пагинацией
+// @Summary      Список клиентов
+// @Description  Возвращает список всех клиентов с пагинацией (offset-based)
+// @Tags         clients
+// @Produce      json
+// @Param        limit   query     int  false  "Количество записей (по умолчанию 100, макс 1000)"
+// @Param        offset  query     int  false  "Смещение (по умолчанию 0)"
+// @Success      200  {array}   dto.ClientResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Router       /api/clients [get]
+func (h *ClientHandler) ListClients(w http.ResponseWriter, r *http.Request) {
+	limit := 100
+	offset := 0
+
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		if parsedLimit, err := strconv.Atoi(limitStr); err == nil && parsedLimit > 0 && parsedLimit <= 1000 {
+			limit = parsedLimit
+		}
+	}
+
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		if parsedOffset, err := strconv.Atoi(offsetStr); err == nil && parsedOffset >= 0 {
+			offset = parsedOffset
+		}
+	}
+
+	clients, err := h.clientService.ListClients(r.Context(), limit, offset)
+	if err != nil {
+		h.logger.Error("Failed to list clients", "error", err)
+		h.respondError(w, http.StatusInternalServerError, "failed to list clients")
+		return
+	}
+
+	responses, err := dto.FromModels(clients)
+	if err != nil {
+		h.logger.Error("Failed to convert models to DTOs", "error", err)
+		h.respondError(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
+	h.respondJSON(w, http.StatusOK, responses)
+}

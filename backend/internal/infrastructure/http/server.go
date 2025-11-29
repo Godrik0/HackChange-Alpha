@@ -59,6 +59,7 @@ func (s *Server) setupRouter() {
 
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/clients", func(r chi.Router) {
+			r.Get("/", s.clientHandler.ListClients)
 			r.Get("/search", s.clientHandler.SearchClients)
 			r.Post("/", s.clientHandler.CreateClient)
 			r.Get("/{id}", s.clientHandler.GetClient)

@@ -19,6 +19,53 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/api/clients": {
+            "get": {
+                "description": "Возвращает список всех клиентов с пагинацией (offset-based)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "summary": "Список клиентов",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Количество записей (по умолчанию 100, макс 1000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Смещение (по умолчанию 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.ClientResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Создает нового клиента с переданными данными (ФИО, дата рождения, признаки для ML)",
                 "consumes": [
