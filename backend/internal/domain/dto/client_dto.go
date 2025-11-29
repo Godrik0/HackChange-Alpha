@@ -15,7 +15,6 @@ type CreateClientRequest struct {
 	FirstName string                 `json:"first_name" validate:"required,min=1,max=100"`
 	LastName  string                 `json:"last_name" validate:"required,min=1,max=100"`
 	BirthDate string                 `json:"birth_date" validate:"required"`
-	CoreData  map[string]interface{} `json:"core_data,omitempty"`
 	Features  map[string]interface{} `json:"features,omitempty"`
 }
 
@@ -23,7 +22,6 @@ type UpdateClientRequest struct {
 	FirstName string                 `json:"first_name" validate:"omitempty,min=1,max=100"`
 	LastName  string                 `json:"last_name" validate:"omitempty,min=1,max=100"`
 	BirthDate string                 `json:"birth_date" validate:"required,datetime=2006-01-02"`
-	CoreData  map[string]interface{} `json:"core_data,omitempty"`
 	Features  map[string]interface{} `json:"features,omitempty"`
 }
 
@@ -32,7 +30,6 @@ type ClientResponse struct {
 	FirstName string                 `json:"first_name"`
 	LastName  string                 `json:"last_name"`
 	BirthDate string                 `json:"birth_date"`
-	CoreData  map[string]interface{} `json:"core_data,omitempty"`
 	Features  map[string]interface{} `json:"features,omitempty"`
 	CreatedAt string                 `json:"created_at"`
 	UpdatedAt string                 `json:"updated_at"`
@@ -60,14 +57,6 @@ func (r *CreateClientRequest) ToModel() (*models.Client, error) {
 		BirthDate: parsedBirthDate,
 	}
 
-	if r.CoreData != nil {
-		coreDataJSON, err := json.Marshal(r.CoreData)
-		if err != nil {
-			return nil, err
-		}
-		client.CoreData = datatypes.JSON(coreDataJSON)
-	}
-
 	if r.Features != nil {
 		featuresJSON, err := json.Marshal(r.Features)
 		if err != nil {
@@ -87,13 +76,6 @@ func FromModel(client *models.Client) (*ClientResponse, error) {
 		BirthDate: client.BirthDate.Format(DateFormat),
 		CreatedAt: client.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt: client.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
-	}
-
-	if len(client.CoreData) > 0 {
-		var coreData map[string]interface{}
-		if err := json.Unmarshal(client.CoreData, &coreData); err == nil {
-			response.CoreData = coreData
-		}
 	}
 
 	if len(client.Features) > 0 {

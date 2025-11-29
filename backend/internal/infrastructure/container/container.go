@@ -26,7 +26,8 @@ type Container struct {
 
 	ClientRepo interfaces.ClientRepository
 
-	ClientService interfaces.ClientService
+	ClientService  interfaces.ClientService
+	ScoringService interfaces.ScoringService
 
 	ClientHandler *handlers.ClientHandler
 
@@ -148,12 +149,19 @@ func (c *Container) initServices() error {
 		c.MLClient,
 		c.Logger,
 	)
+
+	c.ScoringService = services.NewScoringService(
+		c.ClientRepo,
+		c.MLClient,
+		c.Logger,
+	)
 	return nil
 }
 
 func (c *Container) initHandlers() error {
 	c.ClientHandler = handlers.NewClientHandler(
 		c.ClientService,
+		c.ScoringService,
 		c.Logger,
 	)
 	return nil

@@ -12,8 +12,6 @@ type ClientService interface {
 
 	SearchClients(ctx context.Context, params dto.SearchParams) ([]models.Client, error)
 
-	CalculateScoring(ctx context.Context, id int64) (*models.ScoringResult, error)
-
 	CreateClient(ctx context.Context, req *dto.CreateClientRequest) (*models.Client, error)
 
 	UpdateClient(ctx context.Context, id int64, req *dto.UpdateClientRequest) (*models.Client, error)
@@ -21,4 +19,8 @@ type ClientService interface {
 	DeleteClient(ctx context.Context, id int64) error
 
 	ListClients(ctx context.Context, limit, offset int) ([]models.Client, error)
+}
+
+type ScoringService interface {
+	CalculateScoring(ctx context.Context, id int64) (*models.ScoringResult, error)
 }

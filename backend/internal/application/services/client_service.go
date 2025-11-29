@@ -58,32 +58,6 @@ func (s *clientService) SearchClients(ctx context.Context, params dto.SearchPara
 	return clients, nil
 }
 
-func (s *clientService) CalculateScoring(ctx context.Context, id int64) (*models.ScoringResult, error) {
-	s.logger.Debug("Calculating scoring", "client_id", id)
-
-	client, err := s.clientRepo.GetByID(ctx, id)
-	if err != nil {
-		s.logger.Error("Failed to get client for scoring", "id", id, "error", err)
-		return nil, fmt.Errorf("failed to get client for scoring: %w", err)
-	}
-
-	features, err := s.extractFeatures(client)
-	s.logger.Debug("Extracted features", "features", features)
-	if err != nil {
-		s.logger.Error("Failed to extract features", "client_id", id, "error", err)
-		return nil, fmt.Errorf("failed to extract features: %w", err)
-	}
-
-	result, err := s.mlService.Predict(ctx, features)
-	if err != nil {
-		s.logger.Error("Failed to predict scoring", "client_id", id, "error", err)
-		return nil, fmt.Errorf("failed to predict scoring: %w", err)
-	}
-
-	s.logger.Info("Scoring calculated successfully", "client_id", id, "score", result.Score)
-	return result, nil
-}
-
 func (s *clientService) CreateClient(ctx context.Context, req *dto.CreateClientRequest) (*models.Client, error) {
 	if req == nil {
 		return nil, fmt.Errorf("request cannot be nil")
@@ -138,13 +112,6 @@ func (s *clientService) UpdateClient(ctx context.Context, id int64, req *dto.Upd
 		}
 		client.BirthDate = parsedDate
 	}
-	if req.CoreData != nil {
-		coreDataJSON, err := json.Marshal(req.CoreData)
-		if err != nil {
-			return nil, fmt.Errorf("failed to marshal core data: %w", err)
-		}
-		client.CoreData = datatypes.JSON(coreDataJSON)
-	}
 	if req.Features != nil {
 		featuresJSON, err := json.Marshal(req.Features)
 		if err != nil {
@@ -189,38 +156,6 @@ func (s *clientService) ListClients(ctx context.Context, limit, offset int) ([]m
 	}
 
 	return clients, nil
-}
-
-func (s *clientService) extractFeatures(client *models.Client) (map[string]interface{}, error) {
-	features := make(map[string]interface{})
-
-	features["first_name"] = client.FirstName
-	features["last_name"] = client.LastName
-	features["birth_date"] = client.BirthDate
-
-	if len(client.CoreData) > 0 {
-		var coreData map[string]interface{}
-		if err := json.Unmarshal(client.CoreData, &coreData); err == nil {
-			for k, v := range coreData {
-				features[k] = v
-			}
-		}
-	}
-
-	if len(client.Features) > 0 {
-		var clientFeatures map[string]interface{}
-		if err := json.Unmarshal(client.Features, &clientFeatures); err == nil {
-			for k, v := range clientFeatures {
-				features[k] = v
-			}
-		}
-	}
-
-	if len(features) == 0 {
-		return nil, fmt.Errorf("no features available for client %d", client.ID)
-	}
-
-	return features, nil
 }
 
 func (s *clientService) validateClient(client *models.Client) error {

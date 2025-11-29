@@ -13,14 +13,16 @@ import (
 )
 
 type ClientHandler struct {
-	clientService interfaces.ClientService
-	logger        interfaces.Logger
+	clientService  interfaces.ClientService
+	scoringService interfaces.ScoringService
+	logger         interfaces.Logger
 }
 
-func NewClientHandler(clientService interfaces.ClientService, logger interfaces.Logger) *ClientHandler {
+func NewClientHandler(clientService interfaces.ClientService, scoringService interfaces.ScoringService, logger interfaces.Logger) *ClientHandler {
 	return &ClientHandler{
-		clientService: clientService,
-		logger:        logger.With("component", "ClientHandler"),
+		clientService:  clientService,
+		scoringService: scoringService,
+		logger:         logger.With("component", "ClientHandler"),
 	}
 }
 
@@ -92,7 +94,7 @@ func (h *ClientHandler) CalculateScoring(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	result, err := h.clientService.CalculateScoring(r.Context(), id)
+	result, err := h.scoringService.CalculateScoring(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, domainerrors.ErrClientNotFound) {
 			h.respondError(w, http.StatusNotFound, "client not found")
