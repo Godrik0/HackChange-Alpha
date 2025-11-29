@@ -89,6 +89,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Отчество (частичное совпадение)",
+                        "name": "middle_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Дата рождения (DD-MM-YYYY)",
                         "name": "birth_date",
                         "in": "query"

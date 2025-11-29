@@ -79,6 +79,10 @@ func (r *clientRepository) Search(ctx context.Context, params dto.SearchParams) 
 		query = query.Where("LOWER(last_name) LIKE LOWER(?)", "%"+params.LastName+"%")
 	}
 
+	if params.MiddleName != "" {
+		query = query.Where("LOWER(middle_name) LIKE LOWER(?)", "%"+params.MiddleName+"%")
+	}
+
 	if params.BirthDate != "" {
 		parsedDate, err := time.Parse(dto.DateFormat, params.BirthDate)
 		if err == nil {

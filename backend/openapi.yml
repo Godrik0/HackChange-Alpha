@@ -199,6 +199,13 @@ paths:
             type: string
             minLength: 1
           example: Иванов
+        - name: middle_name
+          in: query
+          description: Отчество клиента (частичное совпадение)
+          schema:
+            type: string
+            minLength: 1
+          example: Иванович
         - name: birth_date
           in: query
           description: Дата рождения (точное совпадение, формат DD-MM-YYYY)

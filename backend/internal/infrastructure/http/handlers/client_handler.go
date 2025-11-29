@@ -72,18 +72,20 @@ func (h *ClientHandler) GetClient(w http.ResponseWriter, r *http.Request) {
 // @Description  Поиск по ФИО и дате рождения (формат даты: DD-MM-YYYY). Требуется хотя бы один параметр.
 // @Tags         clients
 // @Produce      json
-// @Param        first_name query     string  false  "Имя (частичное совпадение)"
-// @Param        last_name  query     string  false  "Фамилия (частичное совпадение)"
-// @Param        birth_date query     string  false  "Дата рождения (DD-MM-YYYY)"
-// @Success      200        {array}   dto.ClientSearchResponse
-// @Failure      400        {object}  dto.ErrorResponse
-// @Failure      500        {object}  dto.ErrorResponse
+// @Param        first_name  query     string  false  "Имя (частичное совпадение)"
+// @Param        last_name   query     string  false  "Фамилия (частичное совпадение)"
+// @Param        middle_name query     string  false  "Отчество (частичное совпадение)"
+// @Param        birth_date  query     string  false  "Дата рождения (DD-MM-YYYY)"
+// @Success      200         {array}   dto.ClientSearchResponse
+// @Failure      400         {object}  dto.ErrorResponse
+// @Failure      500         {object}  dto.ErrorResponse
 // @Router       /api/clients/search [get]
 func (h *ClientHandler) SearchClients(w http.ResponseWriter, r *http.Request) {
 	params := dto.SearchParams{
-		FirstName: r.URL.Query().Get("first_name"),
-		LastName:  r.URL.Query().Get("last_name"),
-		BirthDate: r.URL.Query().Get("birth_date"),
+		FirstName:  r.URL.Query().Get("first_name"),
+		LastName:   r.URL.Query().Get("last_name"),
+		MiddleName: r.URL.Query().Get("middle_name"),
+		BirthDate:  r.URL.Query().Get("birth_date"),
 	}
 
 	if params.IsEmpty() {

@@ -45,13 +45,14 @@ type ClientSearchResponse struct {
 }
 
 type SearchParams struct {
-	FirstName string `json:"first_name" form:"first_name"`
-	LastName  string `json:"last_name" form:"last_name"`
-	BirthDate string `json:"birth_date" form:"birth_date"`
+	FirstName  string `json:"first_name" form:"first_name"`
+	LastName   string `json:"last_name" form:"last_name"`
+	MiddleName string `json:"middle_name" form:"middle_name"`
+	BirthDate  string `json:"birth_date" form:"birth_date"`
 }
 
 func (s SearchParams) IsEmpty() bool {
-	return s.FirstName == "" && s.LastName == "" && s.BirthDate == ""
+	return s.FirstName == "" && s.LastName == "" && s.MiddleName == "" && s.BirthDate == ""
 }
 
 func (r *CreateClientRequest) ToModel() (*models.Client, error) {

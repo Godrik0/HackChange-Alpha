@@ -283,6 +283,10 @@ paths:
         in: query
         name: last_name
         type: string
+      - description: Отчество (частичное совпадение)
+        in: query
+        name: middle_name
+        type: string
       - description: Дата рождения (DD-MM-YYYY)
         in: query
         name: birth_date
