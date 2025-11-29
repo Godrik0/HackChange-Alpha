@@ -27,9 +27,6 @@ WORKDIR /root/
 # Копируем бинарник из builder
 COPY --from=builder /app/server .
 
-# Копируем миграции
-COPY --from=builder /app/migrations ./migrations
-
 # Открываем порт
 EXPOSE 8080
 
