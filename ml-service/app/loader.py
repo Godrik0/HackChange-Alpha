@@ -23,9 +23,15 @@ def load_assets(model_path=None):
             IS_LOADED = False
             return
 
-        MODEL = dill.load(model_path)
+        with open(model_path, 'rb') as f:
+            MODEL = dill.load(f)
+
         logger.info(f"Pipeline loaded from {model_path}")
-        logger.info(f"Pipeline steps: {MODEL.steps}")
+
+        if hasattr(MODEL, 'steps'):
+            logger.info(f"Pipeline steps: {MODEL.steps}")
+        else:
+            logger.info(f"Model type: {type(MODEL).__name__}")
 
         IS_LOADED = True
         LOAD_TIME = time() - start

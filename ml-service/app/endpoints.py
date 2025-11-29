@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from uuid import uuid4
 
 from .schemas import PredictionRequest, PredictionResponse, HealthResponse, ModelInfoResponse
-from .inference import predict, explain_features_split
+from .inference import predict, explain_features_split, clean_features
 from .loader import IS_LOADED, MODEL, load_assets
 from .config import settings
 from .utils import logger
@@ -13,10 +13,11 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.post("/api/predict", response_model=PredictionResponse)
+@router.post("/predict", response_model=PredictionResponse)
 async def predict_income(request: PredictionRequest):
     if not IS_LOADED:
         raise HTTPException(status_code=503, detail="Model not loaded")
+
 
     # Создаем uid для ответа и логов
     uid = str(uuid4())

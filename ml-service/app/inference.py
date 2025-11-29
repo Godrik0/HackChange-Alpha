@@ -4,6 +4,16 @@ import shap
 from .loader import MODEL, IS_LOADED
 from .feature_descriptions import FEATURE_DESCRIPTIONS
 
+def clean_features(features_dict: dict) -> dict:
+    """Очищает features от NaN перед созданием DataFrame"""
+    cleaned = {}
+    for key, value in features_dict.items():
+        if isinstance(value, float) and np.isnan(value):
+            # Заменяем NaN на None (будет преобразовано в pandas.NA)
+            cleaned[key] = None
+        else:
+            cleaned[key] = value
+    return cleaned
 
 def preprocess(raw: dict) -> pd.DataFrame:
     return pd.DataFrame([raw])
