@@ -61,17 +61,13 @@ paths:
                 value:
                   first_name: Иван
                   last_name: Иванов
-                  birth_date: "1990-01-15"
+                  birth_date: "15-01-1990"
               withData:
                 summary: С дополнительными данными
                 value:
                   first_name: Мария
                   last_name: Петрова
-                  birth_date: "1985-03-20"
-                  core_data:
-                    phone: "+79991234567"
-                    email: maria@example.com
-                    address: "г. Москва, ул. Ленина, д. 1"
+                  birth_date: "20-03-1985"
                   features:
                     income: 50000
                     employment_years: 5
@@ -136,10 +132,7 @@ paths:
                 value:
                   first_name: Петр
                   last_name: Петров
-                  birth_date: "1988-05-10"
-                  core_data:
-                    phone: "+79991234568"
-                    email: petr@example.com
+                  birth_date: "10-05-1988"
                   features:
                     income: 75000
                     employment_years: 8
@@ -208,11 +201,11 @@ paths:
           example: Иванов
         - name: birth_date
           in: query
-          description: Дата рождения (точное совпадение)
+          description: Дата рождения (точное совпадение, формат DD-MM-YYYY)
           schema:
             type: string
-            format: date
-          example: "1990-01-15"
+            pattern: '^\d{2}-\d{2}-\d{4}$'
+          example: "15-01-1990"
       responses:
         '200':
           description: Результаты поиска
@@ -221,7 +214,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ClientResponse'
+                  $ref: '#/components/schemas/ClientSearchResponse'
               examples:
                 found:
                   summary: Найдены клиенты
@@ -229,15 +222,11 @@ paths:
                     - id: 1
                       first_name: Иван
                       last_name: Иванов
-                      birth_date: "1990-01-15"
-                      created_at: "2024-01-01T10:00:00Z"
-                      updated_at: "2024-01-01T10:00:00Z"
+                      birth_date: "15-01-1990"
                     - id: 2
                       first_name: Иван
                       last_name: Петров
-                      birth_date: "1992-03-20"
-                      created_at: "2024-01-02T11:00:00Z"
-                      updated_at: "2024-01-02T11:00:00Z"
+                      birth_date: "20-03-1992"
                 empty:
                   summary: Клиенты не найдены
                   value: []
@@ -335,19 +324,16 @@ components:
           maxLength: 100
           description: Фамилия клиента
           example: Иванов
+        middle_name:
+          type: string
+          maxLength: 100
+          description: Отчество клиента (опционально)
+          example: Иванович
         birth_date:
           type: string
-          format: date
-          description: Дата рождения в формате YYYY-MM-DD
-          example: "1990-01-15"
-        core_data:
-          type: object
-          additionalProperties: true
-          description: Основные данные клиента (произвольная структура)
-          example:
-            phone: "+79991234567"
-            email: ivan@example.com
-            address: "г. Москва, ул. Ленина, д. 1"
+          pattern: '^\d{2}-\d{2}-\d{4}$'
+          description: Дата рождения в формате DD-MM-YYYY
+          example: "15-01-1990"
         features:
           type: object
           additionalProperties: true
@@ -373,18 +359,16 @@ components:
           maxLength: 100
           description: Фамилия клиента
           example: Петров
+        middle_name:
+          type: string
+          maxLength: 100
+          description: Отчество клиента
+          example: Петрович
         birth_date:
           type: string
-          format: date
-          description: Дата рождения в формате YYYY-MM-DD
-          example: "1990-01-15"
-        core_data:
-          type: object
-          additionalProperties: true
-          description: Основные данные клиента
-          example:
-            phone: "+79991234568"
-            email: updated@example.com
+          pattern: '^\d{2}-\d{2}-\d{4}$'
+          description: Дата рождения в формате DD-MM-YYYY
+          example: "15-01-1990"
         features:
           type: object
           additionalProperties: true
@@ -400,8 +384,6 @@ components:
         - first_name
         - last_name
         - birth_date
-        - created_at
-        - updated_at
       properties:
         id:
           type: integer
@@ -416,19 +398,15 @@ components:
           type: string
           description: Фамилия клиента
           example: Иванов
+        middle_name:
+          type: string
+          description: Отчество клиента
+          example: Иванович
         birth_date:
           type: string
-          format: date
-          description: Дата рождения
-          example: "1990-01-15"
-        core_data:
-          type: object
-          additionalProperties: true
-          description: Основные данные клиента
-          example:
-            phone: "+79991234567"
-            email: ivan@example.com
-            address: "г. Москва, ул. Ленина, д. 1"
+          pattern: '^\d{2}-\d{2}-\d{4}$'
+          description: Дата рождения в формате DD-MM-YYYY
+          example: "15-01-1990"
         features:
           type: object
           additionalProperties: true
@@ -437,16 +415,37 @@ components:
             income: 50000
             employment_years: 5
             credit_history: good
-        created_at:
+
+    ClientSearchResponse:
+      type: object
+      required:
+        - id
+        - first_name
+        - last_name
+        - birth_date
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор клиента
+          example: 1
+        first_name:
           type: string
-          format: date-time
-          description: Дата и время создания
-          example: "2024-01-01T10:00:00Z"
-        updated_at:
+          description: Имя клиента
+          example: Иван
+        last_name:
           type: string
-          format: date-time
-          description: Дата и время последнего обновления
-          example: "2024-01-01T10:00:00Z"
+          description: Фамилия клиента
+          example: Иванов
+        middle_name:
+          type: string
+          description: Отчество клиента
+          example: Иванович
+        birth_date:
+          type: string
+          pattern: '^\d{2}-\d{2}-\d{4}$'
+          description: Дата рождения в формате DD-MM-YYYY
+          example: "15-01-1990"
 
     ScoringResponse:
       type: object

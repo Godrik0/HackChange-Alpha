@@ -1,81 +1,50 @@
 ## API Endpoints
 
-### 1. Health Check
+### Health Check
 ```
-GET /api/health
+GET /health
 ```
 
-### 2. Получить клиента по ID
+### Clients
+
+#### Создать клиента
+```
+POST /api/clients
+```
+Требуемые поля: `first_name`, `last_name`, `birth_date` (DD-MM-YYYY)  
+Опциональные: `middle_name`, `features`
+
+#### Получить клиента
 ```
 GET /api/clients/{id}
 ```
 
-### 3. Поиск клиентов
-```
-GET /api/clients/search?first_name=Иван&last_name=Иванов&birth_date=1990-01-01
-```
-
-Параметры (хотя бы один обязателен):
-- `first_name` - имя клиента (частичное совпадение)
-- `last_name` - фамилия клиента (частичное совпадение)
-- `birth_date` - дата рождения (точное совпадение, формат YYYY-MM-DD)
-
-### 4. Создать клиента
-```
-POST /api/clients
-Content-Type: application/json
-
-{
-  "first_name": "Иван",
-  "last_name": "Иванов",
-  "birth_date": "1990-01-01",
-  "core_data": {
-    "phone": "+79991234567",
-    "email": "ivan@example.com"
-  },
-  "features": {
-    "income": 50000,
-    "credit_history": "good"
-  }
-}
-```
-
-### 5. Обновить клиента
+#### Обновить клиента
 ```
 PUT /api/clients/{id}
-Content-Type: application/json
-
-{
-  "first_name": "Иван",
-  "last_name": "Иванов",
-  "birth_date": "1990-01-01",
-  "core_data": {...},
-  "features": {...}
-}
 ```
+Все поля опциональны: `first_name`, `last_name`, `middle_name`, `birth_date`, `features`
 
-### 6. Удалить клиента
+#### Удалить клиента
 ```
 DELETE /api/clients/{id}
 ```
 
-### 7. Рассчитать скоринг
+#### Поиск клиентов
+```
+GET /api/clients/search?first_name={name}&last_name={surname}&birth_date={date}
+```
+Параметры (хотя бы один обязателен):
+- `first_name` - частичное совпадение
+- `last_name` - частичное совпадение  
+- `birth_date` - точное совпадение (DD-MM-YYYY)
+
+### Scoring
+
+#### Рассчитать ML-скоринг
 ```
 GET /api/clients/{id}/scoring
 ```
+Возвращает: `score` (0-1), `recommendations`, `factors`
 
-Ответ:
-```json
-{
-  "score": 0.85,
-  "recommendations": [
-    "Рекомендация 1",
-    "Рекомендация 2"
-  ],
-  "factors": {
-    "income": 0.3,
-    "credit_history": 0.5,
-    "age": 0.2
-  }
-}
-```
+**Полная документация:** см. `openapi.yml`
