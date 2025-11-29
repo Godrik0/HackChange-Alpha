@@ -130,21 +130,44 @@ func (h *ClientHandler) CalculateScoring(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	result, err := h.scoringService.CalculateScoring(r.Context(), id)
+	client, err := h.clientService.GetClient(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, domainerrors.ErrClientNotFound) {
 			h.respondError(w, http.StatusNotFound, "client not found")
 			return
 		}
+		h.logger.Error("Failed to get client", "id", id, "error", err)
+		h.respondError(w, http.StatusInternalServerError, "failed to get client")
+		return
+	}
+
+	result, err := h.scoringService.CalculateScoring(r.Context(), id)
+	if err != nil {
 		h.logger.Error("Failed to calculate scoring", "id", id, "error", err)
 		h.respondError(w, http.StatusInternalServerError, "failed to calculate scoring")
 		return
 	}
 
+	clientDTO, err := dto.FromModel(client)
+	if err != nil {
+		h.logger.Error("Failed to convert model to DTO", "error", err)
+		h.respondError(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
 	response := &dto.ScoringResponse{
-		Score:           result.Score,
-		Recommendations: result.Recommendations,
-		Factors:         result.Factors,
+		Id:                        client.ID,
+		FirstName:                 client.FirstName,
+		LastName:                  client.LastName,
+		MiddleName:                client.MiddleName,
+		BirthDate:                 client.BirthDate.Format(dto.DateFormat),
+		Income:                    clientDTO.Income,
+		PredictIncome:             result.Score,
+		RecommendationCreditLimit: result.CreditLimit,
+		MaxCreditLimit:            result.MaxCreditLimit,
+		Recommendations:           result.Recommendations,
+		PositiveFactors:           result.PositiveFactors,
+		NegativeFactors:           result.NegativeFactors,
 	}
 
 	h.respondJSON(w, http.StatusOK, response)

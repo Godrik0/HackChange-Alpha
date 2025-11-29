@@ -411,11 +411,40 @@
         "dto.ScoringResponse": {
             "type": "object",
             "properties": {
-                "factors": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "number",
-                        "format": "float64"
+                "birth_date": {
+                    "type": "string"
+                },
+                "credit_limit": {
+                    "type": "number"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "income": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "max_credit_limit": {
+                    "type": "number"
+                },
+                "middle_name": {
+                    "type": "string"
+                },
+                "negative_factors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "positive_factors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
                     }
                 },
                 "recommendations": {

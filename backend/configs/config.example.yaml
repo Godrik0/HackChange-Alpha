@@ -18,6 +18,8 @@ database:
 ml:
   base_url: "http://localhost:5000"
   timeout: 30  # секунды
+  model_version: "v1.0"
+  pipeline_version: "1.0"
 
 log:
   level: "info"  # debug, info, warn, error

@@ -49,11 +49,30 @@ definitions:
     type: object
   dto.ScoringResponse:
     properties:
-      factors:
-        additionalProperties:
-          format: float64
-          type: number
-        type: object
+      birth_date:
+        type: string
+      credit_limit:
+        type: number
+      first_name:
+        type: string
+      id:
+        type: integer
+      income:
+        type: integer
+      last_name:
+        type: string
+      max_credit_limit:
+        type: number
+      middle_name:
+        type: string
+      negative_factors:
+        items:
+          type: string
+        type: array
+      positive_factors:
+        items:
+          type: string
+        type: array
       recommendations:
         items:
           type: string

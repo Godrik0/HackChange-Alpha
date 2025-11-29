@@ -13,5 +13,11 @@ type MLServiceProvider interface {
 type DefaultMLServiceProvider struct{}
 
 func (p *DefaultMLServiceProvider) ProvideMLService(cfg *config.Config, logger interfaces.Logger) interfaces.MLService {
-	return ml.NewMLClient(cfg.ML.BaseURL, cfg.ML.Timeout, logger)
+	return ml.NewMLClient(
+		cfg.ML.BaseURL,
+		cfg.ML.Timeout,
+		cfg.ML.ModelVersion,
+		cfg.ML.PipelineVersion,
+		logger,
+	)
 }
