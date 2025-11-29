@@ -1,0 +1,6 @@
+<div nz-flex nzVertical nzGap="small">
+  <div *ngFor="let client of clients"
+       style="border: 1px solid #f0f0f0; border-radius: 8px; padding: 16px;">
+    <app-client-line [client]="client"></app-client-line>
+  </div>
+</div>

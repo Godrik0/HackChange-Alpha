@@ -1,0 +1,38 @@
+<nz-layout>
+  <nz-header color="">
+    Header
+  </nz-header>
+  <nz-content>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 24px;">
+
+      <h1 style="font-size: 24px; font-weight: 600; margin-bottom: 24px;">
+        Клиенты
+      </h1>
+
+      <div nz-flex nzGap="large">
+
+        <div style="flex: 1;">
+          <nz-card nzTitle="По прогнозируемому доходу"
+                   [nzExtra]="extraTemplate">
+            <app-clients-list [clients]="clients"></app-clients-list>
+          </nz-card>
+        </div>
+
+      </div>
+    </div>
+  </nz-content>
+
+  <div class="test-red-theme">
+    ✅ Если этот текст КРАСНЫЙ - LESS тема работает!
+  </div>
+
+  <button nz-button nzType="primary">Тестовая кнопка</button>
+</nz-layout>
+
+<!-- Дополнительный контент для карточки -->
+<ng-template #extraTemplate>
+  <span style="color: #52c41a;">
+    <i nz-icon nzType="check-circle"></i>
+    От 40 до 60 т
+  </span>
+</ng-template>

@@ -1,0 +1,26 @@
+<nz-flex nzJustify="space-between" nzAlign="center">
+
+  <nz-flex nzGap="middle" nzAlign="center">
+    <nz-avatar
+      nzSize="large"
+      nzSrc="https://via.placeholder.com/40"
+      nzAlt="{{ client.name }}">
+    </nz-avatar>
+
+    <nz-flex nzVertical>
+      <span style="font-weight: 500; font-size: 16px;">
+        {{ client.name }}
+      </span>
+      <span style="color: #666; font-size: 14px;">
+        {{ client.description }}
+      </span>
+    </nz-flex>
+  </nz-flex>
+
+  <div style="text-align: right;">
+    <div style="font-size: 18px; font-weight: 600; color: #1890ff;">
+      {{ client.profit | number }} ₽
+    </div>
+  </div>
+
+</nz-flex>
