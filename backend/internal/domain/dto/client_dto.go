@@ -12,27 +12,30 @@ import (
 const DateFormat = "02-01-2006"
 
 type CreateClientRequest struct {
-	FirstName string                 `json:"first_name" validate:"required,min=1,max=100"`
-	LastName  string                 `json:"last_name" validate:"required,min=1,max=100"`
-	BirthDate string                 `json:"birth_date" validate:"required"`
-	Features  map[string]interface{} `json:"features,omitempty"`
+	FirstName  string                 `json:"first_name" validate:"required,min=1,max=100"`
+	LastName   string                 `json:"last_name" validate:"required,min=1,max=100"`
+	MiddleName string                 `json:"middle_name" validate:"omitempty,max=100"`
+	BirthDate  string                 `json:"birth_date" validate:"required"`
+	Features   map[string]interface{} `json:"features,omitempty"`
 }
 
 type UpdateClientRequest struct {
-	FirstName string                 `json:"first_name" validate:"omitempty,min=1,max=100"`
-	LastName  string                 `json:"last_name" validate:"omitempty,min=1,max=100"`
-	BirthDate string                 `json:"birth_date" validate:"required,datetime=02-01-2006"`
-	Features  map[string]interface{} `json:"features,omitempty"`
+	FirstName  string                 `json:"first_name" validate:"omitempty,min=1,max=100"`
+	LastName   string                 `json:"last_name" validate:"omitempty,min=1,max=100"`
+	MiddleName string                 `json:"middle_name" validate:"omitempty,max=100"`
+	BirthDate  string                 `json:"birth_date" validate:"omitempty,datetime=02-01-2006"`
+	Features   map[string]interface{} `json:"features,omitempty"`
 }
 
 type ClientResponse struct {
-	ID        int64                  `json:"id"`
-	FirstName string                 `json:"first_name"`
-	LastName  string                 `json:"last_name"`
-	BirthDate string                 `json:"birth_date"`
-	Features  map[string]interface{} `json:"features,omitempty"`
-	CreatedAt string                 `json:"created_at"`
-	UpdatedAt string                 `json:"updated_at"`
+	ID         int64                  `json:"id"`
+	FirstName  string                 `json:"first_name"`
+	LastName   string                 `json:"last_name"`
+	MiddleName string                 `json:"middle_name,omitempty"`
+	BirthDate  string                 `json:"birth_date"`
+	Features   map[string]interface{} `json:"features,omitempty"`
+	CreatedAt  string                 `json:"created_at"`
+	UpdatedAt  string                 `json:"updated_at"`
 }
 
 type SearchParams struct {
@@ -52,9 +55,10 @@ func (r *CreateClientRequest) ToModel() (*models.Client, error) {
 	}
 
 	client := &models.Client{
-		FirstName: r.FirstName,
-		LastName:  r.LastName,
-		BirthDate: parsedBirthDate,
+		FirstName:  r.FirstName,
+		LastName:   r.LastName,
+		MiddleName: r.MiddleName,
+		BirthDate:  parsedBirthDate,
 	}
 
 	if r.Features != nil {
@@ -70,12 +74,13 @@ func (r *CreateClientRequest) ToModel() (*models.Client, error) {
 
 func FromModel(client *models.Client) (*ClientResponse, error) {
 	response := &ClientResponse{
-		ID:        client.ID,
-		FirstName: client.FirstName,
-		LastName:  client.LastName,
-		BirthDate: client.BirthDate.Format(DateFormat),
-		CreatedAt: client.CreatedAt.Format("02-01-2006T15:04:05Z07:00"),
-		UpdatedAt: client.UpdatedAt.Format("02-01-2006T15:04:05Z07:00"),
+		ID:         client.ID,
+		FirstName:  client.FirstName,
+		LastName:   client.LastName,
+		MiddleName: client.MiddleName,
+		BirthDate:  client.BirthDate.Format(DateFormat),
+		CreatedAt:  client.CreatedAt.Format("02-01-2006T15:04:05Z07:00"),
+		UpdatedAt:  client.UpdatedAt.Format("02-01-2006T15:04:05Z07:00"),
 	}
 
 	if len(client.Features) > 0 {

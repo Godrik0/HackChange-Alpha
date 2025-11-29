@@ -104,11 +104,14 @@ func (s *clientService) UpdateClient(ctx context.Context, id int64, req *dto.Upd
 	if req.LastName != "" {
 		client.LastName = req.LastName
 	}
+	if req.MiddleName != "" {
+		client.MiddleName = req.MiddleName
+	}
 	if req.BirthDate != "" {
 		parsedDate, err := time.Parse(dto.DateFormat, req.BirthDate)
 		if err != nil {
 			s.logger.Warn("Invalid birth date format", "input", req.BirthDate, "error", err)
-			return nil, fmt.Errorf("invalid birth date format (expected YYYY-MM-DD): %w", err)
+			return nil, fmt.Errorf("invalid birth date format (expected %s): %w", dto.DateFormat, err)
 		}
 		client.BirthDate = parsedDate
 	}
