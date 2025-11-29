@@ -4,25 +4,11 @@ definitions:
     properties:
       birth_date:
         type: string
-      features:
-        additionalProperties: true
-        type: object
       first_name:
         type: string
       id:
         type: integer
-      last_name:
-        type: string
-      middle_name:
-        type: string
-    type: object
-  dto.ClientSearchResponse:
-    properties:
-      birth_date:
-        type: string
-      first_name:
-        type: string
-      id:
+      income:
         type: integer
       last_name:
         type: string
@@ -63,11 +49,30 @@ definitions:
     type: object
   dto.ScoringResponse:
     properties:
-      factors:
-        additionalProperties:
-          format: float64
-          type: number
-        type: object
+      birth_date:
+        type: string
+      credit_limit:
+        type: number
+      first_name:
+        type: string
+      id:
+        type: integer
+      income:
+        type: integer
+      last_name:
+        type: string
+      max_credit_limit:
+        type: number
+      middle_name:
+        type: string
+      negative_factors:
+        items:
+          type: string
+        type: array
+      positive_factors:
+        items:
+          type: string
+        type: array
       recommendations:
         items:
           type: string
@@ -110,6 +115,37 @@ info:
   version: "1.0"
 paths:
   /api/clients:
+    get:
+      description: Возвращает список всех клиентов с пагинацией (offset-based)
+      parameters:
+      - description: Количество записей (по умолчанию 100, макс 1000)
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение (по умолчанию 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.ClientResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Список клиентов
+      tags:
+      - clients
     post:
       consumes:
       - application/json
@@ -298,7 +334,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dto.ClientSearchResponse'
+              $ref: '#/definitions/dto.ClientResponse'
             type: array
         "400":
           description: Bad Request

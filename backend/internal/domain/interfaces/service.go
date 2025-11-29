@@ -22,5 +22,5 @@ type ClientService interface {
 }
 
 type ScoringService interface {
-	CalculateScoring(ctx context.Context, id int64) (*models.ScoringResult, error)
+	CalculateScoring(ctx context.Context, id int64) (*dto.ScoringResponse, error)
 }

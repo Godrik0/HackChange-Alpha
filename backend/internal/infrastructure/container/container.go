@@ -8,6 +8,7 @@ import (
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/interfaces"
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/infrastructure/http"
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/infrastructure/http/handlers"
+	"github.com/Godrik0/HackChange-Alpha/backend/internal/infrastructure/promo"
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/infrastructure/providers"
 	"gorm.io/gorm"
 )
@@ -144,6 +145,8 @@ func (c *Container) initMLClient() error {
 }
 
 func (c *Container) initServices() error {
+	promoProvider := promo.NewStaticPromoProvider()
+
 	c.ClientService = services.NewClientService(
 		c.ClientRepo,
 		c.MLClient,
@@ -153,6 +156,7 @@ func (c *Container) initServices() error {
 	c.ScoringService = services.NewScoringService(
 		c.ClientRepo,
 		c.MLClient,
+		promoProvider,
 		c.Logger,
 	)
 	return nil

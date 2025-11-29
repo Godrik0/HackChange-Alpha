@@ -9,44 +9,77 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/dto"
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/interfaces"
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/models"
 )
 
 type mlClient struct {
-	baseURL    string
-	httpClient *http.Client
-	logger     interfaces.Logger
+	baseURL         string
+	httpClient      *http.Client
+	logger          interfaces.Logger
+	modelVersion    string
+	pipelineVersion string
 }
 
-func NewMLClient(baseURL string, timeoutSeconds int, logger interfaces.Logger) interfaces.MLService {
+func NewMLClient(baseURL string, timeoutSeconds int, modelVersion, pipelineVersion string, logger interfaces.Logger) interfaces.MLService {
 	return &mlClient{
 		baseURL: baseURL,
 		httpClient: &http.Client{
 			Timeout: time.Duration(timeoutSeconds) * time.Second,
 		},
-		logger: logger.With("component", "MLClient"),
+		logger:          logger.With("component", "MLClient"),
+		modelVersion:    modelVersion,
+		pipelineVersion: pipelineVersion,
 	}
 }
 
 type predictRequest struct {
-	Features map[string]interface{} `json:"features"`
+	ModelVersion    string                 `json:"model_version"`
+	PipelineVersion string                 `json:"pipeline_version"`
+	Features        map[string]interface{} `json:"features"`
+	UserID          string                 `json:"user_id"`
 }
 
 type predictResponse struct {
-	Score           float64            `json:"score"`
-	Recommendations []string           `json:"recommendations"`
-	Factors         map[string]float64 `json:"factors"`
+	Prediction  float64            `json:"prediction"`
+	Explanation map[string]float64 `json:"explanation"`
+	ID          string             `json:"id"`
 }
 
 func (c *mlClient) Predict(ctx context.Context, features map[string]interface{}) (*models.ScoringResult, error) {
+	mlResponse, err := c.PredictWithExplanation(ctx, features)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &models.ScoringResult{
+		Score:           mlResponse.Prediction,
+		Recommendations: []string{},
+		Factors:         mlResponse.Explanation,
+	}
+
+	return result, nil
+}
+
+func (c *mlClient) PredictWithExplanation(ctx context.Context, features map[string]interface{}) (*dto.MLScoringResponse, error) {
 	if features == nil || len(features) == 0 {
 		return nil, fmt.Errorf("features cannot be empty")
 	}
 
-	c.logger.Debug("Requesting ML prediction", "features_count", len(features))
+	c.logger.Debug("Requesting ML prediction with explanation", "features_count", len(features))
 
-	reqBody := predictRequest{Features: features}
+	userID := ""
+	if id, ok := features["user_id"].(string); ok {
+		userID = id
+	}
+
+	reqBody := predictRequest{
+		ModelVersion:    c.modelVersion,
+		PipelineVersion: c.pipelineVersion,
+		Features:        features,
+		UserID:          userID,
+	}
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		c.logger.Error("Failed to marshal prediction request", "error", err)
@@ -81,14 +114,14 @@ func (c *mlClient) Predict(ctx context.Context, features map[string]interface{})
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	result := &models.ScoringResult{
-		Score:           response.Score,
-		Recommendations: response.Recommendations,
-		Factors:         response.Factors,
+	mlResponse := &dto.MLScoringResponse{
+		Prediction:  response.Prediction,
+		Explanation: response.Explanation,
+		ID:          response.ID,
 	}
 
-	c.logger.Info("ML prediction completed", "score", result.Score)
-	return result, nil
+	c.logger.Info("ML prediction with explanation completed", "prediction", mlResponse.Prediction, "id", mlResponse.ID)
+	return mlResponse, nil
 }
 
 func (c *mlClient) SendTrainingData(ctx context.Context, data interface{}) error {

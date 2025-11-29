@@ -32,8 +32,10 @@ type DatabaseConfig struct {
 }
 
 type MLConfig struct {
-	BaseURL string `mapstructure:"base_url"`
-	Timeout int    `mapstructure:"timeout"`
+	BaseURL         string `mapstructure:"base_url"`
+	Timeout         int    `mapstructure:"timeout"`
+	ModelVersion    string `mapstructure:"model_version"`
+	PipelineVersion string `mapstructure:"pipeline_version"`
 }
 
 type LogConfig struct {
@@ -86,6 +88,8 @@ func setDefaults() {
 
 	viper.SetDefault("ml.base_url", "http://localhost:5000")
 	viper.SetDefault("ml.timeout", 30)
+	viper.SetDefault("ml.model_version", "v1.0")
+	viper.SetDefault("ml.pipeline_version", "1.0")
 
 	viper.SetDefault("log.level", "info")
 	viper.SetDefault("log.format", "json")

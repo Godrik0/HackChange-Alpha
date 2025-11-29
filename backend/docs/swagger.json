@@ -13,6 +13,53 @@
     "basePath": "/",
     "paths": {
         "/api/clients": {
+            "get": {
+                "description": "Возвращает список всех клиентов с пагинацией (offset-based)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "summary": "Список клиентов",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Количество записей (по умолчанию 100, макс 1000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Смещение (по умолчанию 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.ClientResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Создает нового клиента с переданными данными (ФИО, дата рождения, признаки для ML)",
                 "consumes": [
@@ -100,7 +147,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.ClientSearchResponse"
+                                "$ref": "#/definitions/dto.ClientResponse"
                             }
                         }
                     },
@@ -346,34 +393,13 @@
                 "birth_date": {
                     "type": "string"
                 },
-                "features": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
                 "first_name": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "last_name": {
-                    "type": "string"
-                },
-                "middle_name": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.ClientSearchResponse": {
-            "type": "object",
-            "properties": {
-                "birth_date": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "id": {
+                "income": {
                     "type": "integer"
                 },
                 "last_name": {
@@ -432,11 +458,40 @@
         "dto.ScoringResponse": {
             "type": "object",
             "properties": {
-                "factors": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "number",
-                        "format": "float64"
+                "birth_date": {
+                    "type": "string"
+                },
+                "credit_limit": {
+                    "type": "number"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "income": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "max_credit_limit": {
+                    "type": "number"
+                },
+                "middle_name": {
+                    "type": "string"
+                },
+                "negative_factors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "positive_factors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
                     }
                 },
                 "recommendations": {
