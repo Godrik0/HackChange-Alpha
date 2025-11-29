@@ -72,15 +72,18 @@ func (r *clientRepository) Search(ctx context.Context, params dto.SearchParams) 
 	query := r.db.WithContext(ctx).Model(&models.Client{})
 
 	if params.FirstName != "" {
-		query = query.Where("LOWER(first_name) LIKE LOWER(?)", "%"+params.FirstName+"%")
+		escaped := EscapeLikePattern(params.FirstName)
+		query = query.Where("LOWER(first_name) LIKE LOWER(?)", "%"+escaped+"%")
 	}
 
 	if params.LastName != "" {
-		query = query.Where("LOWER(last_name) LIKE LOWER(?)", "%"+params.LastName+"%")
+		escaped := EscapeLikePattern(params.LastName)
+		query = query.Where("LOWER(last_name) LIKE LOWER(?)", "%"+escaped+"%")
 	}
 
 	if params.MiddleName != "" {
-		query = query.Where("LOWER(middle_name) LIKE LOWER(?)", "%"+params.MiddleName+"%")
+		escaped := EscapeLikePattern(params.MiddleName)
+		query = query.Where("LOWER(middle_name) LIKE LOWER(?)", "%"+escaped+"%")
 	}
 
 	if params.BirthDate != "" {
@@ -149,6 +152,13 @@ func (r *clientRepository) Delete(ctx context.Context, id int64) error {
 }
 
 func (r *clientRepository) List(ctx context.Context, limit, offset int) ([]models.Client, error) {
+	if limit <= 0 || limit > 1000 {
+		limit = 100
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
 	r.logger.Debug("Listing clients", "limit", limit, "offset", offset)
 
 	var clients []models.Client

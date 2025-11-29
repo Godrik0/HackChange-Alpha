@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"io"
 	"log/slog"
 	"os"
 
@@ -15,6 +16,7 @@ type SlogConfig struct {
 
 type SlogLogger struct {
 	logger *slog.Logger
+	output io.WriteCloser
 }
 
 func NewSlogLogger(cfg SlogConfig) (interfaces.Logger, error) {
@@ -37,7 +39,7 @@ func NewSlogLogger(cfg SlogConfig) (interfaces.Logger, error) {
 	}
 
 	var handler slog.Handler
-	output := os.Stdout
+	var output io.WriteCloser = nopCloser{os.Stdout}
 
 	if cfg.OutputPath != "" && cfg.OutputPath != "stdout" {
 		file, err := os.OpenFile(cfg.OutputPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -55,8 +57,14 @@ func NewSlogLogger(cfg SlogConfig) (interfaces.Logger, error) {
 
 	logger := slog.New(handler)
 
-	return &SlogLogger{logger: logger}, nil
+	return &SlogLogger{logger: logger, output: output}, nil
 }
+
+type nopCloser struct {
+	io.Writer
+}
+
+func (nopCloser) Close() error { return nil }
 
 func NewDefaultLogger() interfaces.Logger {
 	logger, _ := NewSlogLogger(SlogConfig{
@@ -86,5 +94,13 @@ func (l *SlogLogger) Error(msg string, args ...any) {
 func (l *SlogLogger) With(args ...any) interfaces.Logger {
 	return &SlogLogger{
 		logger: l.logger.With(args...),
+		output: l.output,
 	}
+}
+
+func (l *SlogLogger) Close() error {
+	if l.output != nil {
+		return l.output.Close()
+	}
+	return nil
 }
