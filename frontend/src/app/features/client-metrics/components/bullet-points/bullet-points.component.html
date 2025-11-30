@@ -7,7 +7,7 @@
           <li *ngFor="let point of points.positive_factors" class="points-splitter">{{ point }}</li>
         </ul>
       } @else {
-        <p style="color: #999; font-style: italic;">Нет данных</p>
+        <p nz-typography nzType="secondary">Нет данных</p>
       }
     </nz-splitter-panel>
     <nz-splitter-panel>
@@ -17,7 +17,7 @@
           <li *ngFor="let point of points.negative_factors" class="points-splitter">{{ point }}</li>
         </ul>
       } @else {
-        <p style="color: #999; font-style: italic;">Нет данных</p>
+        <p nz-typography nzType="secondary">>Нет данных</p>
       }
     </nz-splitter-panel>
   </nz-splitter>

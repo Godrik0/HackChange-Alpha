@@ -1,11 +1,13 @@
-nz-slider .ant-slider-handle {
-  pointer-events: none;   // нельзя трогать бегунок
-}
+.locked-slider {
+  .ant-slider-handle,
+  .ant-slider-step,
+  .ant-slider-rail,
+  .ant-slider-track {
+    pointer-events: none !important;
+  }
 
-nz-slider .ant-slider-track {
-  pointer-events: none;
-}
-
-nz-slider .ant-slider-step {
-  pointer-events: none;
+  // Оставляем hover у ручки
+  .ant-slider-handle::after {
+    pointer-events: auto !important;
+  }
 }

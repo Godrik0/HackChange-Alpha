@@ -18,8 +18,8 @@ export class CreditSliderComponent {
 
   get marks(): NzMarks {
     return {
-      0: '0 ₽',
-      [this.max]: `${this.max.toLocaleString('ru-RU')} ₽`,
+      0: '0',
+      [this.max]: `${Math.trunc(this.max).toLocaleString('ru-RU')}`,
     };
   }
 }

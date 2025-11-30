@@ -38,9 +38,9 @@
 
     <nz-card style="margin-top:16px;">
       <p style="font-weight:bold;">Кредитный лимит</p>
-      <app-credit-slider 
-        [max]="scoring.max_credit_limit || scoring.credit_limit" 
-        [optimal]="scoring.credit_limit" 
+      <app-credit-slider
+        [max]="scoring.max_credit_limit || scoring.credit_limit"
+        [optimal]="scoring.credit_limit"
         [ngModel]="selectedLimit">
       </app-credit-slider>
       <div style="margin-top: 8px; display: flex; justify-content: space-between;">
@@ -55,8 +55,9 @@
       <app-bullet-points [points]="bulletPoints"></app-bullet-points>
     </nz-card>
 
-    @if (recommendations && recommendations.length > 0) {
-      <nz-row [nzGutter]="16" style="margin-top:16px;">
+    <h1>Рекомендации</h1>
+    @if (recommendations?.length) {
+      <nz-row [nzGutter]="[70, 70]" style="margin-top:16px;">
         <nz-col *ngFor="let recommendation of recommendations" [nzSpan]="6">
           <app-action-card [recommendation]="recommendation"></app-action-card>
         </nz-col>
