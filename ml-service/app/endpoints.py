@@ -22,11 +22,23 @@ async def predict_income(request: PredictionRequest):
         raise HTTPException(status_code=503, detail="Model not loaded")
 
     uid = str(uuid4())
-    df = pd.DataFrame([request.features])
-    model = get_model()
     
-    prediction_value = model.predict(df)[0]
-    explanation = explain_features_split(df, model)
+    try:
+        df = pd.DataFrame([request.features])
+        model = get_model()
+        prediction_value = model.predict(df)[0]
+    except ValueError as ve:
+        logger.error(f"[PREDICT] Invalid features: {ve}")
+        raise HTTPException(status_code=400, detail=f"Invalid features: {ve}")
+    except Exception as e:
+        logger.error(f"[PREDICT] Prediction failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Prediction failed")
+    
+    try:
+        explanation = explain_features_split(df, model)
+    except Exception as e:
+        logger.error(f"[PREDICT] Explanation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Explanation failed")
     
     logger.info(f"[PREDICT] prediction={prediction_value:.2f}, uid={uid}")
     

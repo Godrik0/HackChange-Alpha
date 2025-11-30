@@ -22,26 +22,31 @@ def load_assets(model_path=None):
     model_path = model_path or settings.MODEL_PATH
     start = time()
 
-    if not os.path.exists(model_path):
-        logger.error(f"Model file NOT FOUND: {model_path}")
-        return
+    try:
+        if not os.path.exists(model_path):
+            logger.error(f"Model file NOT FOUND: {model_path}")
+            _state['is_loaded'] = False
+            return
 
-    with open(model_path, 'rb') as f:
-        model = dill.load(f)
-        _state['model'] = model
+        with open(model_path, 'rb') as f:
+            model = dill.load(f)
+            _state['model'] = model
 
-    logger.info(f"Pipeline loaded from {model_path}")
+        logger.info(f"Pipeline loaded from {model_path}")
 
-    if hasattr(model, 'steps'):
-        preprocessor = model.steps[0][1]
-        xgb_model = model.steps[-1][1]
-        if hasattr(xgb_model, 'get_booster'):
-            booster = xgb_model.get_booster()
-            preprocessor.expected_feature_order_ = list(booster.feature_names)
-            logger.info(f"Injected {len(booster.feature_names)} features into preprocessor")
+        if hasattr(model, 'steps'):
+            preprocessor = model.steps[0][1]
+            xgb_model = model.steps[-1][1]
+            if hasattr(xgb_model, 'get_booster'):
+                booster = xgb_model.get_booster()
+                preprocessor.expected_feature_order_ = list(booster.feature_names)
+                logger.info(f"Injected {len(booster.feature_names)} features into preprocessor")
 
-    _state['is_loaded'] = True
-    logger.info(f"Assets loaded in {time() - start:.2f}s")
+        _state['is_loaded'] = True
+        logger.info(f"Assets loaded in {time() - start:.2f}s")
+    except Exception as e:
+        logger.error(f"Failed to load model: {e}", exc_info=True)
+        _state['is_loaded'] = False
 
 
 @asynccontextmanager
