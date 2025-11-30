@@ -1,7 +1,7 @@
 package models
 
 type ScoringResult struct {
-	Score           float64            `json:"score"`
+	PredictIncome   float64            `json:"predict_income"`
 	Recommendations []string           `json:"recommendations"`
 	Factors         map[string]float64 `json:"factors"`
 	PositiveFactors []string           `json:"positive_factors"`
@@ -11,5 +11,5 @@ type ScoringResult struct {
 }
 
 func (s *ScoringResult) IsValid() bool {
-	return s.Score >= 0
+	return s.PredictIncome >= 0
 }

@@ -544,14 +544,14 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "predict_income": {
+                    "type": "number"
+                },
                 "recommendations": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
-                },
-                "score": {
-                    "type": "number"
                 }
             }
         },

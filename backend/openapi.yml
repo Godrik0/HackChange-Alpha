@@ -444,7 +444,7 @@ paths:
                     middle_name: Иванович
                     birth_date: "15-01-1990"
                     income: 50000
-                    score: 0.85
+                    predict_income: 52000.50
                     credit_limit: 150000
                     max_credit_limit: 200000
                     positive_factors:
@@ -648,11 +648,11 @@ components:
           type: integer
           description: Доход клиента
           example: 50000
-        score:
+        predict_income:
           type: number
           format: double
-          description: Оценка клиента (скоринг)
-          example: 0.85
+          description: Предсказанный доход клиента
+          example: 52000.50
         credit_limit:
           type: number
           format: double

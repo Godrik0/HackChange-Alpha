@@ -73,12 +73,12 @@ definitions:
         items:
           type: string
         type: array
+      predict_income:
+        type: number
       recommendations:
         items:
           type: string
         type: array
-      score:
-        type: number
     type: object
   dto.SuccessResponse:
     properties:

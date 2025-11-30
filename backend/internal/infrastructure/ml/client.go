@@ -68,7 +68,7 @@ func (c *mlClient) Predict(ctx context.Context, features map[string]interface{})
 	}
 
 	result := &models.ScoringResult{
-		Score:           mlResponse.Prediction,
+		PredictIncome:   mlResponse.Prediction,
 		Recommendations: []string{},
 		Factors:         flatFactors,
 	}
