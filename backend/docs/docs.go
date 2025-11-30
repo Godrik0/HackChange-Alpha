@@ -111,6 +111,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/clients/import": {
+            "post": {
+                "description": "Загружает клиентов из CSV файла. Поддерживает две схемы: простую (first_name,last_name,birth_date,...) и полную (с features в JSON). Формат даты: DD-MM-YYYY или YYYY-MM-DD",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "summary": "Импорт клиентов из CSV",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "CSV файл с данными клиентов",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Результат импорта с количеством успешных/неудачных записей",
+                        "schema": {
+                            "$ref": "#/definitions/interfaces.ImportStats"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/clients/search": {
             "get": {
                 "description": "Поиск по ФИО и дате рождения (формат даты: DD-MM-YYYY). Требуется хотя бы один параметр.",
@@ -500,14 +544,14 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "predict_income": {
+                    "type": "number"
+                },
                 "recommendations": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
-                },
-                "score": {
-                    "type": "number"
                 }
             }
         },
@@ -543,6 +587,26 @@ const docTemplate = `{
                 "middle_name": {
                     "type": "string",
                     "maxLength": 100
+                }
+            }
+        },
+        "interfaces.ImportStats": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "failure_count": {
+                    "type": "integer"
+                },
+                "success_count": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         }

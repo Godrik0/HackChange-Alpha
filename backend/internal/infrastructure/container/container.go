@@ -29,6 +29,7 @@ type Container struct {
 
 	ClientService  interfaces.ClientService
 	ScoringService interfaces.ScoringService
+	ImportService  interfaces.ImportService
 
 	ClientHandler *handlers.ClientHandler
 
@@ -159,6 +160,12 @@ func (c *Container) initServices() error {
 		promoProvider,
 		c.Logger,
 	)
+
+	c.ImportService = services.NewImportService(
+		c.ClientRepo,
+		c.Logger,
+	)
+
 	return nil
 }
 
@@ -166,6 +173,7 @@ func (c *Container) initHandlers() error {
 	c.ClientHandler = handlers.NewClientHandler(
 		c.ClientService,
 		c.ScoringService,
+		c.ImportService,
 		c.Logger,
 	)
 	return nil

@@ -42,9 +42,9 @@ type predictRequest struct {
 }
 
 type predictResponse struct {
-	Prediction  float64            `json:"prediction"`
-	Explanation map[string]float64 `json:"explanation"`
-	ID          string             `json:"id"`
+	Prediction  float64                       `json:"prediction"`
+	Explanation map[string]map[string]float64 `json:"explanation"`
+	UID         string                        `json:"uid"`
 }
 
 func (c *mlClient) Predict(ctx context.Context, features map[string]interface{}) (*models.ScoringResult, error) {
@@ -53,10 +53,24 @@ func (c *mlClient) Predict(ctx context.Context, features map[string]interface{})
 		return nil, err
 	}
 
+	flatFactors := make(map[string]float64)
+	if mlResponse.Explanation != nil {
+		if positive, ok := mlResponse.Explanation["positive"]; ok {
+			for k, v := range positive {
+				flatFactors[k] = v
+			}
+		}
+		if negative, ok := mlResponse.Explanation["negative"]; ok {
+			for k, v := range negative {
+				flatFactors[k] = v
+			}
+		}
+	}
+
 	result := &models.ScoringResult{
-		Score:           mlResponse.Prediction,
+		PredictIncome:   mlResponse.Prediction,
 		Recommendations: []string{},
-		Factors:         mlResponse.Explanation,
+		Factors:         flatFactors,
 	}
 
 	return result, nil
@@ -80,27 +94,34 @@ func (c *mlClient) PredictWithExplanation(ctx context.Context, features map[stri
 		Features:        features,
 		UserID:          userID,
 	}
+	c.logger.Info("[ML REQUEST] Preparing request", "model_version", c.modelVersion, "pipeline_version", c.pipelineVersion, "features_count", len(features))
+
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		c.logger.Error("Failed to marshal prediction request", "error", err)
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	url := fmt.Sprintf("%s/api/predict", c.baseURL)
+	url := fmt.Sprintf("%s/predict", c.baseURL)
+	c.logger.Info("[ML REQUEST] Sending POST request", "url", url, "base_url", c.baseURL, "payload_size", len(jsonData))
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(jsonData))
 	if err != nil {
-		c.logger.Error("Failed to create HTTP request", "error", err)
+		c.logger.Error("Failed to create HTTP request", "error", err, "url", url)
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
+	c.logger.Info("[ML REQUEST] Executing HTTP request", "method", "POST", "url", url)
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		c.logger.Error("Failed to execute ML prediction request", "error", err)
+		c.logger.Error("Failed to execute ML prediction request", "error", err, "url", url)
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
 	defer resp.Body.Close()
+
+	c.logger.Info("[ML RESPONSE] Received response", "status_code", resp.StatusCode, "url", url)
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
@@ -117,10 +138,10 @@ func (c *mlClient) PredictWithExplanation(ctx context.Context, features map[stri
 	mlResponse := &dto.MLScoringResponse{
 		Prediction:  response.Prediction,
 		Explanation: response.Explanation,
-		ID:          response.ID,
+		ID:          response.UID,
 	}
 
-	c.logger.Info("ML prediction with explanation completed", "prediction", mlResponse.Prediction, "id", mlResponse.ID)
+	c.logger.Info("ML prediction with explanation completed", "prediction", mlResponse.Prediction, "uid", mlResponse.ID)
 	return mlResponse, nil
 }
 

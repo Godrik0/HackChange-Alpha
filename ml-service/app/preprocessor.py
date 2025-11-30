@@ -23,6 +23,7 @@ class BankPreprocessor(BaseEstimator, TransformerMixin):
     def __init__(self, min_job_freq=10, verbose=False):
         self.min_job_freq = min_job_freq
         self.frequent_jobs_ = None
+        self.expected_feature_order_ = None
         self.verbose = verbose
 
     def fit(self, X, y=None):
@@ -60,9 +61,11 @@ class BankPreprocessor(BaseEstimator, TransformerMixin):
         existing_drop = [c for c in drop_cols if c in X.columns]
         X = X.drop(columns=existing_drop)
 
-        # object -> category
         obj_cols = X.select_dtypes(include=["object"]).columns
         for col in obj_cols:
-            X[col] = X[col].astype("category")
+            X[col] = X[col].fillna("unknown").astype("category")
+
+        if hasattr(self, 'expected_feature_order_') and self.expected_feature_order_ is not None:
+            X = X[self.expected_feature_order_]
 
         return X

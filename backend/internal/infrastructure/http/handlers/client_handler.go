@@ -15,18 +15,19 @@ import (
 type ClientHandler struct {
 	clientService  interfaces.ClientService
 	scoringService interfaces.ScoringService
+	importService  interfaces.ImportService
 	logger         interfaces.Logger
 }
 
-func NewClientHandler(clientService interfaces.ClientService, scoringService interfaces.ScoringService, logger interfaces.Logger) *ClientHandler {
+func NewClientHandler(clientService interfaces.ClientService, scoringService interfaces.ScoringService, importService interfaces.ImportService, logger interfaces.Logger) *ClientHandler {
 	return &ClientHandler{
 		clientService:  clientService,
 		scoringService: scoringService,
+		importService:  importService,
 		logger:         logger.With("component", "ClientHandler"),
 	}
 }
 
-// GetClient получает клиента по ID
 // @Summary      Получение клиента
 // @Description  Возвращает полные данные клиента по его ID
 // @Tags         clients
@@ -67,7 +68,6 @@ func (h *ClientHandler) GetClient(w http.ResponseWriter, r *http.Request) {
 	h.respondJSON(w, http.StatusOK, response)
 }
 
-// SearchClients ищет клиентов
 // @Summary      Поиск клиентов
 // @Description  Поиск по ФИО и дате рождения (формат даты: DD-MM-YYYY). Требуется хотя бы один параметр.
 // @Tags         clients
@@ -110,7 +110,6 @@ func (h *ClientHandler) SearchClients(w http.ResponseWriter, r *http.Request) {
 	h.respondJSON(w, http.StatusOK, responses)
 }
 
-// CalculateScoring рассчитывает скоринг клиента
 // @Summary      Расчет ML-скоринга
 // @Description  Запускает ML-модель для расчета скора клиента и получения рекомендаций
 // @Tags         scoring
@@ -144,7 +143,6 @@ func (h *ClientHandler) CalculateScoring(w http.ResponseWriter, r *http.Request)
 	h.respondJSON(w, http.StatusOK, result)
 }
 
-// CreateClient создает нового клиента
 // @Summary      Создание клиента
 // @Description  Создает нового клиента с переданными данными (ФИО, дата рождения, признаки для ML)
 // @Tags         clients
@@ -306,4 +304,47 @@ func (h *ClientHandler) ListClients(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.respondJSON(w, http.StatusOK, responses)
+}
+
+// ImportClientsCSV загружает клиентов из CSV файла
+// @Summary      Импорт клиентов из CSV
+// @Description  Загружает клиентов из CSV файла. Поддерживает две схемы: простую (first_name,last_name,birth_date,...) и полную (с features в JSON). Формат даты: DD-MM-YYYY или YYYY-MM-DD
+// @Tags         clients
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        file  formData  file  true  "CSV файл с данными клиентов"
+// @Success      200   {object}  interfaces.ImportStats  "Результат импорта с количеством успешных/неудачных записей"
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      500   {object}  dto.ErrorResponse
+// @Router       /api/clients/import [post]
+func (h *ClientHandler) ImportClientsCSV(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
+
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		h.logger.Error("Failed to parse multipart form", "error", err)
+		h.respondError(w, http.StatusBadRequest, "file too large or invalid form data")
+		return
+	}
+
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		h.logger.Error("Failed to get file from form", "error", err)
+		h.respondError(w, http.StatusBadRequest, "file is required")
+		return
+	}
+	defer file.Close()
+
+	stats, err := h.importService.ImportClientsCSV(r.Context(), file)
+	if err != nil {
+		h.logger.Error("Failed to import CSV", "error", err)
+		h.respondError(w, http.StatusInternalServerError, "failed to import clients")
+		return
+	}
+
+	if len(stats.Errors) > 20 {
+		stats.Errors = append(stats.Errors[:20], "... и другие ошибки")
+	}
+
+	h.logger.Info("CSV import completed", "success", stats.SuccessCount, "failures", stats.FailureCount)
+	h.respondJSON(w, http.StatusOK, stats)
 }

@@ -10,6 +10,8 @@ import (
 type ClientRepository interface {
 	Create(ctx context.Context, client *models.Client) error
 
+	BatchCreate(ctx context.Context, clients []*models.Client) (int, error)
+
 	GetByID(ctx context.Context, id int64) (*models.Client, error)
 
 	Search(ctx context.Context, params dto.SearchParams) ([]models.Client, error)

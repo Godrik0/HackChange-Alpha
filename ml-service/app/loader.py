@@ -6,40 +6,47 @@ from contextlib import asynccontextmanager
 from .config import settings
 from .utils import logger
 
-MODEL = None
-IS_LOADED = False
-LOAD_TIME = None
+_state = {
+    'model': None,
+    'is_loaded': False
+}
+
+def is_model_loaded():
+    return _state['is_loaded']
+
+def get_model():
+    return _state['model']
 
 
 def load_assets(model_path=None):
-    global MODEL, IS_LOADED, LOAD_TIME
-
     model_path = model_path or settings.MODEL_PATH
     start = time()
 
     try:
         if not os.path.exists(model_path):
             logger.error(f"Model file NOT FOUND: {model_path}")
-            IS_LOADED = False
+            _state['is_loaded'] = False
             return
 
         with open(model_path, 'rb') as f:
-            MODEL = dill.load(f)
+            model = dill.load(f)
+            _state['model'] = model
 
         logger.info(f"Pipeline loaded from {model_path}")
 
-        if hasattr(MODEL, 'steps'):
-            logger.info(f"Pipeline steps: {MODEL.steps}")
-        else:
-            logger.info(f"Model type: {type(MODEL).__name__}")
+        if hasattr(model, 'steps'):
+            preprocessor = model.steps[0][1]
+            xgb_model = model.steps[-1][1]
+            if hasattr(xgb_model, 'get_booster'):
+                booster = xgb_model.get_booster()
+                preprocessor.expected_feature_order_ = list(booster.feature_names)
+                logger.info(f"Injected {len(booster.feature_names)} features into preprocessor")
 
-        IS_LOADED = True
-        LOAD_TIME = time() - start
-        logger.info(f"Assets loaded in {LOAD_TIME:.2f}s")
-
+        _state['is_loaded'] = True
+        logger.info(f"Assets loaded in {time() - start:.2f}s")
     except Exception as e:
-        logger.exception(f"Failed to load pipeline: {e}")
-        IS_LOADED = False
+        logger.error(f"Failed to load model: {e}", exc_info=True)
+        _state['is_loaded'] = False
 
 
 @asynccontextmanager

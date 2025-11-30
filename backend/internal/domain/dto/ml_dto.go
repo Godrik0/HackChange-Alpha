@@ -2,7 +2,7 @@ package dto
 
 type MLScoringResponse struct {
 	Prediction  float64            `json:"prediction"`
-	Explanation map[string]float64 `json:"explanation"`
+	Explanation map[string]map[string]float64 `json:"explanation"`
 	ID          string             `json:"id"`
 }
 

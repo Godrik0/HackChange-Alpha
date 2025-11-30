@@ -43,6 +43,44 @@ paths:
                 status: ok
 
   /api/clients:
+    get:
+      tags:
+        - clients
+      summary: Список клиентов
+      description: Возвращает список всех клиентов с пагинацией (offset-based)
+      operationId: listClients
+      parameters:
+        - name: limit
+          in: query
+          description: Количество записей (по умолчанию 100, макс 1000)
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+            minimum: 1
+          example: 100
+        - name: offset
+          in: query
+          description: Смещение (по умолчанию 0)
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          example: 0
+      responses:
+        '200':
+          description: Список клиентов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    
     post:
       tags:
         - clients
@@ -211,7 +249,6 @@ paths:
           description: Дата рождения (точное совпадение, формат DD-MM-YYYY)
           schema:
             type: string
-            pattern: '^\d{2}-\d{2}-\d{4}$'
           example: "15-01-1990"
       responses:
         '200':
@@ -248,6 +285,127 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 
+  /api/clients/import:
+    post:
+      tags:
+        - clients
+      summary: Импорт клиентов из CSV
+      description: |
+        Загружает клиентов из CSV файла. 
+        
+        **Формат CSV:**
+        - Обязательные колонки: `first_name`, `last_name`, `birth_date`
+        - Опциональная колонка: `middle_name`
+        - Все остальные колонки сохраняются как ML features
+        
+        **Форматы даты:** DD-MM-YYYY, YYYY-MM-DD, DD/MM/YYYY, YYYY/MM/DD
+        
+        **ML Features:** Модель требует 221 фичу. При расчете скоринга отсутствующие фичи автоматически заполняются нулями.
+        
+        **Примеры CSV:**
+        - Минимальный: `first_name,last_name,birth_date`
+        - С ключевыми фичами: `first_name,last_name,birth_date,salary_6to12m_avg,age,pil`
+        - Полный: все 221 фича (см. example_full_features.csv)
+      operationId: importClientsCSV
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSV файл с данными клиентов (макс 10MB)
+            examples:
+              minimal:
+                summary: Минимальный CSV
+                value: |
+                  first_name,last_name,birth_date
+                  Иван,Петров,15-05-1985
+                  Мария,Иванова,1990-08-22
+              withFeatures:
+                summary: CSV с ML фичами
+                value: |
+                  first_name,last_name,birth_date,salary_6to12m_avg,age,pil,gender
+                  Иван,Петров,15-05-1985,85000.50,38,2,Мужской
+                  Мария,Иванова,1990-08-22,75000.00,33,1,Женский
+      responses:
+        '200':
+          description: Результат импорта
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success_count
+                  - failure_count
+                  - total
+                properties:
+                  success_count:
+                    type: integer
+                    description: Количество успешно импортированных клиентов
+                    example: 98
+                  failure_count:
+                    type: integer
+                    description: Количество неудачных записей
+                    example: 2
+                  total:
+                    type: integer
+                    description: Общее количество обработанных записей
+                    example: 100
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    description: Список ошибок (макс 20, остальные обрезаются)
+                    example:
+                      - "Line 15: birth_date is required"
+                      - "Line 23: invalid birth_date format: 1990-13-45 (expected DD-MM-YYYY or YYYY-MM-DD)"
+              examples:
+                success:
+                  summary: Успешный импорт
+                  value:
+                    success_count: 100
+                    failure_count: 0
+                    total: 100
+                partial:
+                  summary: Частичный успех
+                  value:
+                    success_count: 95
+                    failure_count: 5
+                    total: 100
+                    errors:
+                      - "Line 12: first_name is required"
+                      - "Line 34: invalid birth_date format: 32-01-1990 (expected DD-MM-YYYY or YYYY-MM-DD)"
+                      - "Line 67: last_name is required"
+                      - "Line 89: birth_date is required"
+                      - "Line 91: column count mismatch"
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                noFile:
+                  summary: Файл не предоставлен
+                  value:
+                    error: file is required
+                tooLarge:
+                  summary: Файл слишком большой
+                  value:
+                    error: file too large or invalid form data
+                invalidFormat:
+                  summary: Неверный формат CSV
+                  value:
+                    error: invalid CSV format
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /api/clients/{id}/scoring:
     get:
       tags:
@@ -255,7 +413,17 @@ paths:
       summary: Рассчитать ML-скоринг клиента
       description: |
         Выполняет расчет ML-скоринга для указанного клиента.
-        Возвращает оценку (score), рекомендации и факторы, влияющие на оценку.
+        Возвращает оценку (score), кредитный лимит, рекомендации и факторы.
+        
+        **Автоматическое дополнение фич:**
+        Модель требует ровно 221 фичу. Если у клиента меньше фич, недостающие автоматически заполняются нулевыми значениями.
+        
+        **Список 221 фичи включает:**
+        - Финансовые показатели: turn_cur_cr_avg_act_v2, salary_6to12m_avg, incomeValue
+        - Кредитная история: hdb_bki_total_max_limit, pil, loan_cnt
+        - Банковские операции: avg_cur_cr_turn, turn_cur_db_sum_v2
+        - Демографические данные: age, gender, region
+        - И 210+ других признаков
       operationId: calculateScoring
       parameters:
         - $ref: '#/components/parameters/ClientId'
@@ -270,27 +438,23 @@ paths:
                 positive:
                   summary: Положительная оценка
                   value:
-                    score: 0.85
-                    recommendations:
-                      - Клиент имеет хорошую кредитную историю
+                    id: 1
+                    first_name: Иван
+                    last_name: Иванов
+                    middle_name: Иванович
+                    birth_date: "15-01-1990"
+                    income: 50000
+                    predict_income: 52000.50
+                    credit_limit: 150000
+                    max_credit_limit: 200000
+                    positive_factors:
                       - Стабильный доход
-                      - Рекомендуется одобрение
-                    factors:
-                      income: 0.5
-                      credit_history: 0.3
-                      employment_years: 0.2
-                negative:
-                  summary: Отрицательная оценка
-                  value:
-                    score: 0.35
+                      - Хорошая кредитная история
+                    negative_factors:
+                      - Отсутствие залогового имущества
                     recommendations:
-                      - Недостаточная кредитная история
-                      - Низкий доход
-                      - Рекомендуется отказ
-                    factors:
-                      income: 0.2
-                      credit_history: 0.1
-                      employment_years: 0.05
+                      - Рекомендуется одобрение кредита
+                      - Можно увеличить лимит при предоставлении поручителя
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -338,8 +502,7 @@ components:
           example: Иванович
         birth_date:
           type: string
-          pattern: '^\d{2}-\d{2}-\d{4}$'
-          description: Дата рождения в формате DD-MM-YYYY
+          description: Дата рождения (DD-MM-YYYY или ISO)
           example: "15-01-1990"
         features:
           type: object
@@ -373,8 +536,7 @@ components:
           example: Петрович
         birth_date:
           type: string
-          pattern: '^\d{2}-\d{2}-\d{4}$'
-          description: Дата рождения в формате DD-MM-YYYY
+          description: Дата рождения (DD-MM-YYYY или ISO)
           example: "15-01-1990"
         features:
           type: object
@@ -411,17 +573,12 @@ components:
           example: Иванович
         birth_date:
           type: string
-          pattern: '^\d{2}-\d{2}-\d{4}$'
-          description: Дата рождения в формате DD-MM-YYYY
+          description: Дата рождения в формате DD-MM-YYYY или ISO
           example: "15-01-1990"
-        features:
-          type: object
-          additionalProperties: true
-          description: Признаки для ML-модели
-          example:
-            income: 50000
-            employment_years: 5
-            credit_history: good
+        income:
+          type: integer
+          description: Доход клиента
+          example: 50000
 
     ClientSearchResponse:
       type: object
@@ -450,43 +607,85 @@ components:
           example: Иванович
         birth_date:
           type: string
-          pattern: '^\d{2}-\d{2}-\d{4}$'
-          description: Дата рождения в формате DD-MM-YYYY
+          description: Дата рождения в формате DD-MM-YYYY или ISO
           example: "15-01-1990"
+        income:
+          type: integer
+          description: Доход клиента
+          example: 50000
 
     ScoringResponse:
       type: object
       required:
+        - id
+        - first_name
+        - last_name
+        - birth_date
         - score
-        - recommendations
-        - factors
       properties:
-        score:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор клиента
+          example: 1
+        first_name:
+          type: string
+          description: Имя клиента
+          example: Иван
+        last_name:
+          type: string
+          description: Фамилия клиента
+          example: Иванов
+        middle_name:
+          type: string
+          description: Отчество клиента
+          example: Иванович
+        birth_date:
+          type: string
+          description: Дата рождения
+          example: "15-01-1990"
+        income:
+          type: integer
+          description: Доход клиента
+          example: 50000
+        predict_income:
           type: number
           format: double
-          minimum: 0
-          maximum: 1
-          description: Оценка клиента (от 0 до 1)
-          example: 0.85
+          description: Предсказанный доход клиента
+          example: 52000.50
+        credit_limit:
+          type: number
+          format: double
+          description: Рекомендуемый кредитный лимит
+          example: 150000.50
+        max_credit_limit:
+          type: number
+          format: double
+          description: Максимальный возможный кредитный лимит
+          example: 200000.00
+        positive_factors:
+          type: array
+          items:
+            type: string
+          description: Положительные факторы
+          example:
+            - Стабильный доход
+            - Хорошая кредитная история
+        negative_factors:
+          type: array
+          items:
+            type: string
+          description: Негативные факторы
+          example:
+            - Отсутствие залогового имущества
         recommendations:
           type: array
           items:
             type: string
-          description: Список рекомендаций на основе скоринга
+          description: Рекомендации на основе скоринга
           example:
-            - Клиент имеет хорошую кредитную историю
-            - Стабильный доход
-            - Рекомендуется одобрение
-        factors:
-          type: object
-          additionalProperties:
-            type: number
-            format: double
-          description: Факторы, влияющие на оценку (название фактора → вес)
-          example:
-            income: 0.5
-            credit_history: 0.3
-            employment_years: 0.2
+            - Рекомендуется одобрение кредита
+            - Можно увеличить лимит при предоставлении поручителя
 
     ErrorResponse:
       type: object

@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/dto"
@@ -58,8 +57,8 @@ func (c *CreditLimitCalculator) Calculate(input dto.CreditLimitInput) dto.Credit
 
 func formatFactors(factors map[string]float64) []string {
 	result := make([]string, 0, len(factors))
-	for name, value := range factors {
-		result = append(result, fmt.Sprintf("%s: %.2f", name, value))
+	for name := range factors {
+		result = append(result, name)
 	}
 	return result
 }

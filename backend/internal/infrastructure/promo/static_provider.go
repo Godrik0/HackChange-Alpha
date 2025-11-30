@@ -43,7 +43,7 @@ func NewStaticPromoProvider() interfaces.PromoProvider {
 	}
 }
 
-func (p *staticPromoProvider) GetPromos(ctx context.Context, income int64, score float64) ([]string, error) {
+func (p *staticPromoProvider) GetPromos(ctx context.Context, income int64, predictIncome float64) ([]string, error) {
 	result := make([]string, 0, 3)
 
 	for _, promo := range p.promoActions {

@@ -42,6 +42,24 @@ func (r *clientRepository) Create(ctx context.Context, client *models.Client) er
 	return nil
 }
 
+func (r *clientRepository) BatchCreate(ctx context.Context, clients []*models.Client) (int, error) {
+	if len(clients) == 0 {
+		return 0, nil
+	}
+
+	r.logger.Debug("Batch creating clients", "count", len(clients))
+
+	result := r.db.WithContext(ctx).CreateInBatches(clients, 100)
+	if result.Error != nil {
+		r.logger.Error("Failed to batch create clients", "error", result.Error)
+		return 0, fmt.Errorf("failed to batch create clients: %w", result.Error)
+	}
+
+	createdCount := int(result.RowsAffected)
+	r.logger.Info("Clients batch created successfully", "count", createdCount)
+	return createdCount, nil
+}
+
 func (r *clientRepository) GetByID(ctx context.Context, id int64) (*models.Client, error) {
 	if id <= 0 {
 		return nil, domainerrors.ErrInvalidClientID
