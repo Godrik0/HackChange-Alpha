@@ -10,7 +10,7 @@ import {ClientsComponent} from "./pages/clients/clients.component";
   imports: [
     CommonModule,
     RouterModule.forChild([
-      { path: '', component: ClientsComponent },
+      { path: '', component: ClientsComponent, runGuardsAndResolvers: 'always' },
     ])
   ]
 })

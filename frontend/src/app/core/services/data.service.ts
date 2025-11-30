@@ -3,6 +3,7 @@ import {Observable} from "rxjs";
 import {Client} from "@core/models/client";
 import {ApiService} from "@core/services/api.service";
 import {HttpParams} from "@angular/common/http";
+import {Scoring} from "@core/models/scoring";
 
 type SearchData = Omit<Client, 'id' | 'incoming'>
 
@@ -17,6 +18,10 @@ export class DataService {
 
   getClient(clientID: number): Observable<Client> {
     return this.api.get(`clients/${clientID}`);
+  }
+
+  getScoringClient(clientID: number): Observable<Scoring> {
+    return this.api.get(`clients/${clientID}/scoring`);
   }
 
   searchClient(searchData: SearchData): Observable<Client[]> {

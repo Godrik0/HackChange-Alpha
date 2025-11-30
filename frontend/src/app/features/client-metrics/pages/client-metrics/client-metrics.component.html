@@ -1,10 +1,11 @@
+@if (client$ | async; as client) {
 <nz-layout>
   <nz-header style="display:flex; align-items:center; justify-content:space-between;">
     <div class="logo">
       <img ngSrc="/logo.svg" alt="logo" routerLink='' style="cursor: pointer;" height="64" width="64">
     </div>
     <div class="user-name" style="font-weight:bold; font-size:18px;">
-      ИВАНОВ ИВАН ИВАНОВИЧ
+      {{ getFullName(client) }}
     </div>
   </nz-header>
 
@@ -13,15 +14,15 @@
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
           <p style="margin:0; font-size:12px; color:gray;">Прогнозируемый доход</p>
-          <h2 style="margin:0;">55 000 ₽</h2>
+          <h2 style="margin:0;">{{ scoring?.predict_income }}</h2>
         </div>
-        <app-income-chart [data2]="incomeData"></app-income-chart>
+        <app-income-chart [data]="incomeData"></app-income-chart>
       </div>
     </nz-card>
 
     <nz-card style="margin-top:16px;">
       <p style="font-weight:bold;">Кредитный лимит</p>
-      <app-credit-slider [max]="90000" [optimal]="70000" [(ngModel)]="selectedLimit"></app-credit-slider>
+      <app-credit-slider [max]="scoring!.max_credit_limit" [optimal]="scoring!.credit_limit" [ngModel]="selectedLimit"></app-credit-slider>
     </nz-card>
 
     <nz-card>
@@ -34,4 +35,6 @@
       </nz-col>
     </nz-row>
   </nz-content>
-</nz-layout>
+</nz-layout> } @else {
+  <nz-empty nzNotFoundContent="No data"/>
+}

@@ -10,13 +10,13 @@ import {BarChartModule, Color, ScaleType} from '@swimlane/ngx-charts';
   ]
 })
 export class IncomeChartComponent {
-  @Input() data2 = {};
+  @Input() data = {};
 
-  data = [
-    { name: 'Jan', value: 100 },
-    { name: 'Feb', value: 150 },
-    { name: 'Mar', value: 80 }
-  ];
+  // data = [
+  //   { name: 'Jan', value: 100 },
+  //   { name: 'Feb', value: 150 },
+  //   { name: 'Mar', value: 80 }
+  // ];
 
   view: [number, number] = [700, 400];
   showXAxis = true;

@@ -16,7 +16,6 @@
             placeholder="Search"
             nzSize="large"
             [(ngModel)]="inputValue"
-            (input)="onChange($event)"
           />
         </nz-input-search>
 
@@ -29,8 +28,8 @@
       </nz-flex>
 
       @if (!displayedClientsIsEmpty) {
-        <nz-card *ngFor="let client of displayedClients">
-          <app-client-line [client]="client"/>
+        <nz-card *ngFor="let client of clients$ | async">
+          <app-client-line [client]="client" />
         </nz-card>
       } @else {
         <nz-empty nzNotFoundContent="No data"/>

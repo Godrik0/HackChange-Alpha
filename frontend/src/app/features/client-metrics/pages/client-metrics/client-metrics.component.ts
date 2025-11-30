@@ -1,18 +1,25 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {NzContentComponent, NzHeaderComponent, NzLayoutComponent} from "ng-zorro-antd/layout";
 import {NzCardComponent} from "ng-zorro-antd/card";
 import {NzColDirective, NzRowDirective} from "ng-zorro-antd/grid";
-import {NgForOf, NgOptimizedImage} from "@angular/common";
+import {AsyncPipe, CommonModule, NgForOf, NgOptimizedImage} from "@angular/common";
 import {IncomeChartComponent} from "@features/client-metrics/components/income-chart/income-chart.component";
 import {CreditSliderComponent} from "@features/client-metrics/components/credit-slider/credit-slider.component";
 import {BulletPointsComponent} from "@features/client-metrics/components/bullet-points/bullet-points.component";
 import {ActionCardComponent} from "@features/client-metrics/components/action-card/action-card.component";
 import {FormsModule} from "@angular/forms";
-import {RouterLink} from "@angular/router";
+import {ActivatedRoute, RouterLink} from "@angular/router";
+import {getFullName} from "@core/utils/utils";
+import {Client} from "@core/models/client";
+import {DataService} from "@core/services/data.service";
+import {NzEmptyComponent} from "ng-zorro-antd/empty";
+import {Observable} from "rxjs";
+import {Scoring} from "@core/models/scoring";
 
 @Component({
   selector: 'app-client-metrics',
   imports: [
+    CommonModule,
     NzLayoutComponent,
     NzHeaderComponent,
     NzContentComponent,
@@ -26,17 +33,49 @@ import {RouterLink} from "@angular/router";
     ActionCardComponent,
     FormsModule,
     NgOptimizedImage,
-    RouterLink
+    RouterLink,
+    NzEmptyComponent,
+    AsyncPipe,
   ],
   templateUrl: './client-metrics.component.html',
   styleUrl: './client-metrics.component.less',
 })
-export class ClientMetricsComponent {
-  selectedLimit = 40000;
-  incomeData = [
-    { x: '32 000', y: 1 },
-    { x: '55 000', y: 2 }
-  ];
-  bulletPoints = ['высокий рост дохода', 'нет просрочек по кредитам'];
-  actionCards = [{ title: 'Отправить 1' }, { title: 'Отправить 2' }, { title: 'Отправить 3' }, { title: 'Отправить 4' }]
+export class ClientMetricsComponent implements OnInit {
+  clientID: number | null = null;
+  client$: Observable<Client> | undefined;
+  scoring: Scoring | undefined;
+
+  constructor(private route: ActivatedRoute, private dataService: DataService) {
+  }
+
+  ngOnInit() {
+    this.clientID = Number(this.route.snapshot.paramMap.get('id')) ?? null;
+    this.client$ = this.dataService.getClient(this.clientID);
+    this.dataService.getScoringClient(this.clientID).subscribe(
+      (scoring) => {
+        this.scoring = scoring;
+      }
+    )
+  }
+
+  get incomeData() {
+    return [
+      { name: 'Текущий доход', value: this.scoring?.income },
+      { name: 'Прогнозируемый доход', value: this.scoring?.predict_income },
+    ]
+  }
+
+  get actionCards() {
+    return [this.scoring?.credit_limit];
+  }
+
+  get selectedLimit() {
+    return this.scoring?.credit_limit ?? 0;
+  }
+
+  get bulletPoints() {
+    return []
+  }
+
+  protected readonly getFullName = getFullName;
 }
