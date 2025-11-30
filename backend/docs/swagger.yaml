@@ -105,6 +105,19 @@ definitions:
         maxLength: 100
         type: string
     type: object
+  interfaces.ImportStats:
+    properties:
+      errors:
+        items:
+          type: string
+        type: array
+      failure_count:
+        type: integer
+      success_count:
+        type: integer
+      total:
+        type: integer
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -325,8 +338,7 @@ paths:
         "200":
           description: Результат импорта с количеством успешных/неудачных записей
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/interfaces.ImportStats'
         "400":
           description: Bad Request
           schema:

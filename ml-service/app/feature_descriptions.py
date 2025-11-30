@@ -18,5 +18,4 @@ FEATURE_DESCRIPTIONS = {"turn_cur_cr_avg_act_v2": "Средний текущий
                         "region": "Регион проживания",
                         "vert_pil_sms_success_3m": "Количество событий вида 'Sms Success' за 3 месяца",
                         "first_salary_income": "Размер первой зарплаты"
-
                         }

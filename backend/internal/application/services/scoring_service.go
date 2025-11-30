@@ -102,14 +102,18 @@ func (s *scoringService) getRecommendations(ctx context.Context, prediction floa
 	return recommendations
 }
 
-func (s *scoringService) splitFactorsBySign(explanation map[string]float64) (positive, negative map[string]float64) {
+func (s *scoringService) splitFactorsBySign(explanation map[string]map[string]float64) (positive, negative map[string]float64) {
 	positive = make(map[string]float64)
 	negative = make(map[string]float64)
 
-	for key, value := range explanation {
-		if value > 0 {
+	if positiveMap, ok := explanation["positive"]; ok {
+		for key, value := range positiveMap {
 			positive[key] = value
-		} else if value < 0 {
+		}
+	}
+
+	if negativeMap, ok := explanation["negative"]; ok {
+		for key, value := range negativeMap {
 			negative[key] = value
 		}
 	}
@@ -156,11 +160,6 @@ func (s *scoringService) extractCreditLimitInput(features map[string]interface{}
 
 func (s *scoringService) extractFeatures(client *models.Client) (map[string]interface{}, error) {
 	features := make(map[string]interface{})
-
-	features["user_id"] = fmt.Sprintf("%d", client.ID)
-	features["first_name"] = client.FirstName
-	features["last_name"] = client.LastName
-	features["birth_date"] = client.BirthDate.Format(dto.DateFormat)
 
 	if len(client.Features) > 0 {
 		var clientFeatures map[string]interface{}

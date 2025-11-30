@@ -1,15 +1,10 @@
 package handlers
 
 import (
-	"encoding/csv"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
 	"strconv"
-	"strings"
-	"time"
 
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/domain/dto"
 	domainerrors "github.com/Godrik0/HackChange-Alpha/backend/internal/domain/errors"
@@ -20,18 +15,19 @@ import (
 type ClientHandler struct {
 	clientService  interfaces.ClientService
 	scoringService interfaces.ScoringService
+	importService  interfaces.ImportService
 	logger         interfaces.Logger
 }
 
-func NewClientHandler(clientService interfaces.ClientService, scoringService interfaces.ScoringService, logger interfaces.Logger) *ClientHandler {
+func NewClientHandler(clientService interfaces.ClientService, scoringService interfaces.ScoringService, importService interfaces.ImportService, logger interfaces.Logger) *ClientHandler {
 	return &ClientHandler{
 		clientService:  clientService,
 		scoringService: scoringService,
+		importService:  importService,
 		logger:         logger.With("component", "ClientHandler"),
 	}
 }
 
-// GetClient получает клиента по ID
 // @Summary      Получение клиента
 // @Description  Возвращает полные данные клиента по его ID
 // @Tags         clients
@@ -72,7 +68,6 @@ func (h *ClientHandler) GetClient(w http.ResponseWriter, r *http.Request) {
 	h.respondJSON(w, http.StatusOK, response)
 }
 
-// SearchClients ищет клиентов
 // @Summary      Поиск клиентов
 // @Description  Поиск по ФИО и дате рождения (формат даты: DD-MM-YYYY). Требуется хотя бы один параметр.
 // @Tags         clients
@@ -115,7 +110,6 @@ func (h *ClientHandler) SearchClients(w http.ResponseWriter, r *http.Request) {
 	h.respondJSON(w, http.StatusOK, responses)
 }
 
-// CalculateScoring рассчитывает скоринг клиента
 // @Summary      Расчет ML-скоринга
 // @Description  Запускает ML-модель для расчета скора клиента и получения рекомендаций
 // @Tags         scoring
@@ -149,7 +143,6 @@ func (h *ClientHandler) CalculateScoring(w http.ResponseWriter, r *http.Request)
 	h.respondJSON(w, http.StatusOK, result)
 }
 
-// CreateClient создает нового клиента
 // @Summary      Создание клиента
 // @Description  Создает нового клиента с переданными данными (ФИО, дата рождения, признаки для ML)
 // @Tags         clients
@@ -320,12 +313,11 @@ func (h *ClientHandler) ListClients(w http.ResponseWriter, r *http.Request) {
 // @Accept       multipart/form-data
 // @Produce      json
 // @Param        file  formData  file  true  "CSV файл с данными клиентов"
-// @Success      200   {object}  map[string]interface{}  "Результат импорта с количеством успешных/неудачных записей"
+// @Success      200   {object}  interfaces.ImportStats  "Результат импорта с количеством успешных/неудачных записей"
 // @Failure      400   {object}  dto.ErrorResponse
 // @Failure      500   {object}  dto.ErrorResponse
 // @Router       /api/clients/import [post]
 func (h *ClientHandler) ImportClientsCSV(w http.ResponseWriter, r *http.Request) {
-	// Ограничение размера файла (10MB)
 	r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
 
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
@@ -342,173 +334,17 @@ func (h *ClientHandler) ImportClientsCSV(w http.ResponseWriter, r *http.Request)
 	}
 	defer file.Close()
 
-	reader := csv.NewReader(file)
-	reader.TrimLeadingSpace = true
-
-	// Читаем заголовки
-	headers, err := reader.Read()
+	stats, err := h.importService.ImportClientsCSV(r.Context(), file)
 	if err != nil {
-		h.logger.Error("Failed to read CSV headers", "error", err)
-		h.respondError(w, http.StatusBadRequest, "invalid CSV format")
+		h.logger.Error("Failed to import CSV", "error", err)
+		h.respondError(w, http.StatusInternalServerError, "failed to import clients")
 		return
 	}
 
-	// Нормализуем заголовки (trim, lowercase)
-	for i := range headers {
-		headers[i] = strings.TrimSpace(strings.ToLower(headers[i]))
+	if len(stats.Errors) > 20 {
+		stats.Errors = append(stats.Errors[:20], "... и другие ошибки")
 	}
 
-	successCount := 0
-	failureCount := 0
-	var errors []string
-
-	lineNum := 1 // Начинаем с 1 (заголовки)
-
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
-		}
-		lineNum++
-
-		if err != nil {
-			h.logger.Warn("Failed to read CSV line", "line", lineNum, "error", err)
-			errors = append(errors, fmt.Sprintf("Line %d: %v", lineNum, err))
-			failureCount++
-			continue
-		}
-
-		if len(record) != len(headers) {
-			errors = append(errors, fmt.Sprintf("Line %d: column count mismatch", lineNum))
-			failureCount++
-			continue
-		}
-
-		// Создаем map из записи
-		rowData := make(map[string]string)
-		for i, header := range headers {
-			rowData[header] = strings.TrimSpace(record[i])
-		}
-
-		// Парсим клиента из строки
-		clientReq, err := h.parseClientFromCSVRow(rowData, headers)
-		if err != nil {
-			errors = append(errors, fmt.Sprintf("Line %d: %v", lineNum, err))
-			failureCount++
-			continue
-		}
-
-		// Создаем клиента
-		if _, err := h.clientService.CreateClient(r.Context(), clientReq); err != nil {
-			h.logger.Warn("Failed to create client from CSV", "line", lineNum, "error", err)
-			errors = append(errors, fmt.Sprintf("Line %d: %v", lineNum, err))
-			failureCount++
-			continue
-		}
-
-		successCount++
-	}
-
-	result := map[string]interface{}{
-		"success_count": successCount,
-		"failure_count": failureCount,
-		"total":         successCount + failureCount,
-	}
-
-	if len(errors) > 0 {
-		// Ограничиваем количество ошибок в ответе
-		if len(errors) > 20 {
-			result["errors"] = append(errors[:20], "... и другие ошибки")
-		} else {
-			result["errors"] = errors
-		}
-	}
-
-	h.logger.Info("CSV import completed", "success", successCount, "failures", failureCount)
-	h.respondJSON(w, http.StatusOK, result)
-}
-
-// parseClientFromCSVRow парсит клиента из CSV строки
-func (h *ClientHandler) parseClientFromCSVRow(row map[string]string, headers []string) (*dto.CreateClientRequest, error) {
-	req := &dto.CreateClientRequest{}
-
-	// Обязательные поля
-	firstName, ok := row["first_name"]
-	if !ok || firstName == "" {
-		return nil, errors.New("first_name is required")
-	}
-	req.FirstName = firstName
-
-	lastName, ok := row["last_name"]
-	if !ok || lastName == "" {
-		return nil, errors.New("last_name is required")
-	}
-	req.LastName = lastName
-
-	// Парсим дату рождения (поддерживаем форматы DD-MM-YYYY и YYYY-MM-DD)
-	birthDateStr, ok := row["birth_date"]
-	if !ok || birthDateStr == "" {
-		return nil, errors.New("birth_date is required")
-	}
-
-	var birthDate time.Time
-	var parseErr error
-
-	// Пробуем разные форматы
-	formats := []string{"02-01-2006", "2006-01-02", "02/01/2006", "2006/01/02"}
-	for _, format := range formats {
-		birthDate, parseErr = time.Parse(format, birthDateStr)
-		if parseErr == nil {
-			break
-		}
-	}
-
-	if parseErr != nil {
-		return nil, fmt.Errorf("invalid birth_date format: %s (expected DD-MM-YYYY or YYYY-MM-DD)", birthDateStr)
-	}
-
-	req.BirthDate = birthDate.Format(dto.DateFormat)
-
-	// Опциональные поля
-	if middleName, ok := row["middle_name"]; ok {
-		req.MiddleName = middleName
-	}
-
-	// Собираем все дополнительные поля как features
-	features := make(map[string]interface{})
-
-	// Список базовых полей, которые не должны попасть в features
-	baseFields := map[string]bool{
-		"first_name":  true,
-		"last_name":   true,
-		"middle_name": true,
-		"birth_date":  true,
-		"phone":       true,
-		"email":       true,
-		"address":     true,
-	}
-
-	for _, header := range headers {
-		if baseFields[header] {
-			continue
-		}
-
-		value := row[header]
-		if value == "" {
-			continue
-		}
-
-		// Пытаемся распарсить как число
-		if floatVal, err := strconv.ParseFloat(value, 64); err == nil {
-			features[header] = floatVal
-		} else {
-			features[header] = value
-		}
-	}
-
-	if len(features) > 0 {
-		req.Features = features
-	}
-
-	return req, nil
+	h.logger.Info("CSV import completed", "success", stats.SuccessCount, "failures", stats.FailureCount)
+	h.respondJSON(w, http.StatusOK, stats)
 }

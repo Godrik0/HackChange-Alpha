@@ -12,7 +12,7 @@ class PredictionRequest(BaseModel):
 
 class PredictionResponse(BaseModel):
     prediction: float
-    explanation: Optional[Dict[str, float]] = None
+    explanation: Optional[Dict[str, Dict[str, float]]] = None
     uid: str
 
 

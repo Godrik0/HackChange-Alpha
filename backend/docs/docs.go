@@ -137,8 +137,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Результат импорта с количеством успешных/неудачных записей",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/interfaces.ImportStats"
                         }
                     },
                     "400": {
@@ -588,6 +587,26 @@ const docTemplate = `{
                 "middle_name": {
                     "type": "string",
                     "maxLength": 100
+                }
+            }
+        },
+        "interfaces.ImportStats": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "failure_count": {
+                    "type": "integer"
+                },
+                "success_count": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         }
