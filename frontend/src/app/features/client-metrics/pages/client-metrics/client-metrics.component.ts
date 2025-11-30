@@ -65,8 +65,8 @@ export class ClientMetricsComponent implements OnInit {
     ]
   }
 
-  get actionCards() {
-    return [this.scoring?.credit_limit];
+  get recommendations() {
+    return this.scoring?.recommendations;
   }
 
   get selectedLimit() {
@@ -74,7 +74,10 @@ export class ClientMetricsComponent implements OnInit {
   }
 
   get bulletPoints() {
-    return []
+    return {
+      "negative_factors": this.scoring?.negative_factors!,
+      "positive_factors": this.scoring?.positive_factors!
+    }
   }
 
   protected readonly getFullName = getFullName;

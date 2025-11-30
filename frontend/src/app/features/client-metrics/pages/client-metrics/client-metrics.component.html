@@ -30,8 +30,8 @@
     </nz-card>
 
     <nz-row [nzGutter]="16" style="margin-top:16px;">
-      <nz-col *ngFor="let card of actionCards" [nzSpan]="6">
-        <app-action-card [data]="card"></app-action-card>
+      <nz-col *ngFor="let recommendation of recommendations" [nzSpan]="6">
+        <app-action-card [recommendation]="recommendation"></app-action-card>
       </nz-col>
     </nz-row>
   </nz-content>

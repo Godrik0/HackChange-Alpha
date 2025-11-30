@@ -14,5 +14,8 @@ import {NgForOf} from "@angular/common";
   styleUrl: './bullet-points.component.less',
 })
 export class BulletPointsComponent {
-  @Input() points: string[] = [];
+  @Input() points: {
+    negative_factors: string[];
+    positive_factors: string[];
+  } = Object();
 }

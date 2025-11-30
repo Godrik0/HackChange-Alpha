@@ -1,13 +1,15 @@
 <nz-flex nzGap="middle" nzVertical>
   <nz-splitter>
     <nz-splitter-panel nzResizable="false">
+      <span>Позитивные факторы</span>
       <ul>
-        <li *ngFor="let point of points" class="points-splitter">{{ point }}</li>
+        <li *ngFor="let point of points.positive_factors" class="points-splitter">{{ point }}</li>
       </ul>
     </nz-splitter-panel>
     <nz-splitter-panel>
+      <span>Негативный факторы</span>
       <ul>
-        <li *ngFor="let point of points" class="points-splitter">{{ point }}</li>
+        <li *ngFor="let point of points.negative_factors" class="points-splitter">{{ point }}</li>
       </ul>
     </nz-splitter-panel>
   </nz-splitter>
