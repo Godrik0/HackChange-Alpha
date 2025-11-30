@@ -1,0 +1,112 @@
+/* 1. Light (Тонкий) - weight 300 */
+@font-face {
+  font-family: 'Styrene A';
+  src: url('assets/fonts/StyreneAWeb-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+}
+
+/* 2. Regular (Обычный) - weight 400 */
+/* Если файла Regular нет, возможно он называется просто StyreneAWeb.woff2 */
+@font-face {
+  font-family: 'Styrene A';
+  src: url('assets/fonts/StyreneAWeb-Regular.woff2') format('woff2'); 
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* 3. Bold (Жирный) - weight 700 */
+@font-face {
+  font-family: 'Styrene A';
+  src: url('assets/fonts/StyreneAWeb-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* 4. Black (Очень жирный) - weight 900 */
+@font-face {
+  font-family: 'Styrene A';
+  src: url('assets/fonts/StyreneAWeb-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@import "ng-zorro-antd/ng-zorro-antd.less";
+
+@primary-color: #ff4d4f;
+@body-background: #ffffff;
+@component-background: #ffffff;
+@border-color-base: #ff4d4f;
+@text-color: rgba(0, 0, 0, 0.85);
+@text-color-secondary: rgba(0,0,0,0.45);
+@font-family: 'Styrene A';
+
+
+
+body {
+  font-family: 'Styrene A', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: @body-background;
+  color: @text-color;
+}
+
+.ant-layout-header {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ant-card {
+  border-radius: 8px;
+}
+
+.ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.ant-input {
+  border-radius: 6px;
+}
+
+.ant-select-selector {
+  border-radius: 6px !important;
+}
+
+.ant-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ant-layout {
+  background: #ffffff;
+}
+
+.ant-layout-header {
+  background: #ffffff;
+}
+
+.ant-menu-item-selected {
+  font-weight: 600;
+}
+
+.filter-card {
+  .ant-card-head {
+    background: #fef2f2;
+    border-bottom: 1px solid #fecaca;
+  }
+}
+
+.clients-list {
+  .ant-card-head {
+    border-bottom: 1px solid #fecaca;
+  }
+}
+
+.content-wrapper {
+  width: 90%;
+  margin: 0 auto;
+}
+
+.nz-select-dropdown {
+  width: 30%;
+}

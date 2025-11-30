@@ -1,0 +1,13 @@
+.locked-slider {
+  .ant-slider-handle,
+  .ant-slider-step,
+  .ant-slider-rail,
+  .ant-slider-track {
+    pointer-events: none !important;
+  }
+
+  // Оставляем hover у ручки
+  .ant-slider-handle::after {
+    pointer-events: auto !important;
+  }
+}

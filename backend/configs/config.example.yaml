@@ -1,0 +1,26 @@
+# Скопируйте этот файл в config.yaml и настройте под свои нужды
+
+server:
+  addr: "0.0.0.0"
+  port: 8080
+  read_timeout: 15      # секунды
+  write_timeout: 15     # секунды
+  shutdown_timeout: 30  # секунды
+
+database:
+  host: "postgres"
+  port: 5432
+  user: "postgres"
+  password: "postgres"
+  dbname: "hackchange"
+  sslmode: "disable"
+
+ml:
+  base_url: "http://localhost:5000"
+  timeout: 30  # секунды
+  model_version: "v1.0"
+  pipeline_version: "1.0"
+
+log:
+  level: "info"  # debug, info, warn, error
+  format: "json"  # json, text

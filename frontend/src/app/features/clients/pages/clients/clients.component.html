@@ -1,0 +1,41 @@
+<nz-layout>
+  <nz-header>
+    <img ngSrc="/logo.svg" alt="logo" routerLink='' style="cursor: pointer;" height="64" width="64">
+  </nz-header>
+
+  <nz-content class="content-wrapper">
+    <nz-flex nzVertical="true" nzGap="middle">
+      <span style="font-weight: 700; font-size: 30px;">
+        Клиенты
+      </span>
+
+      <nz-flex
+        nzJustify="space-between"
+        nzGap="large">
+        <nz-input-search nzEnterButton class="nz-select-dropdown">
+          <input
+            nz-input
+            placeholder="Search"
+            nzSize="large"
+            [(ngModel)]="inputValue"
+          />
+        </nz-input-search>
+
+        <nz-select [(ngModel)]="selectedRange" (ngModelChange)="changeLimit()" nzSize="large"
+                   class="nz-select-dropdown">
+          @for (p of rangeOptions; track p) {
+            <nz-option [nzValue]="p" [nzLabel]="p"></nz-option>
+          }
+        </nz-select>
+      </nz-flex>
+
+      @if (!displayedClientsIsEmpty) {
+        <nz-card *ngFor="let client of displayedClients">
+          <app-client-line [client]="client" />
+        </nz-card>
+      } @else {
+        <nz-empty nzNotFoundContent="No data"/>
+      }
+    </nz-flex>
+  </nz-content>
+</nz-layout>

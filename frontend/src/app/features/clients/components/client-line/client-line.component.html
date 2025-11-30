@@ -1,0 +1,31 @@
+<nz-flex nzJustify="space-between" nzAlign="center">
+
+  <nz-flex nzGap="middle" nzAlign="center">
+    <nz-avatar
+      style="background-color: #ff4d4f"
+      nzSize="large"
+      nzIcon="user">
+    </nz-avatar>
+
+    <nz-flex nzVertical>
+      <span style="font-weight: 600; font-size: 16px;">
+        {{ getFullName(client) }}
+      </span>
+      <span style="color: #666; font-size: 14px;">
+        {{ client.birth_date }}
+      </span>
+    </nz-flex>
+  </nz-flex>
+
+  <nz-flex style="text-align: right;"
+    nzVertical="true"
+    nzAlign="start"
+    nzGap="small">
+    <div style="font-size: 18px; font-weight: 600">
+      {{ client.income ? (client.income | number:'1.0-0') + ' ₽' : 'Не указано' }}
+    </div>
+
+    <button nz-button [routerLink]="['client', client.id]">Подробнее</button>
+  </nz-flex>
+
+</nz-flex>
