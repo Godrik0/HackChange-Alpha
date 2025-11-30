@@ -12,7 +12,7 @@
         {{ getFullName(client) }}
       </span>
       <span style="color: #666; font-size: 14px;">
-        {{ client.birth_date | date }}
+        {{ client.birth_date }}
       </span>
     </nz-flex>
   </nz-flex>
@@ -22,7 +22,7 @@
     nzAlign="start"
     nzGap="small">
     <div style="font-size: 18px; font-weight: 600">
-      {{ client.incoming ?? 'Не указано' }} {{ client.incoming ? '₽' : ''}}
+      {{ client.income ? (client.income | number:'1.0-0') + ' ₽' : 'Не указано' }}
     </div>
 
     <button nz-button [routerLink]="['client', client.id]">Подробнее</button>

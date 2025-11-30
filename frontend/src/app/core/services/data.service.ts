@@ -5,7 +5,7 @@ import {ApiService} from "@core/services/api.service";
 import {HttpParams} from "@angular/common/http";
 import {Scoring} from "@core/models/scoring";
 
-type SearchData = Omit<Client, 'id' | 'incoming'>
+type SearchData = Omit<Client, 'id' | 'income'>
 
 @Injectable({ providedIn: 'root' })
 export class DataService {

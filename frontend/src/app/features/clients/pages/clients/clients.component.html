@@ -28,7 +28,7 @@
       </nz-flex>
 
       @if (!displayedClientsIsEmpty) {
-        <nz-card *ngFor="let client of clients$ | async">
+        <nz-card *ngFor="let client of displayedClients">
           <app-client-line [client]="client" />
         </nz-card>
       } @else {

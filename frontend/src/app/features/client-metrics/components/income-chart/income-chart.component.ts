@@ -10,13 +10,7 @@ import {BarChartModule, Color, ScaleType} from '@swimlane/ngx-charts';
   ]
 })
 export class IncomeChartComponent {
-  @Input() data = {};
-
-  // data = [
-  //   { name: 'Jan', value: 100 },
-  //   { name: 'Feb', value: 150 },
-  //   { name: 'Mar', value: 80 }
-  // ];
+  @Input() data: any[] = [];
 
   view: [number, number] = [700, 400];
   showXAxis = true;
@@ -24,8 +18,8 @@ export class IncomeChartComponent {
   showLegend = false;
   showXAxisLabel = true;
   showYAxisLabel = true;
-  xAxisLabel = 'Месяц';
-  yAxisLabel = 'Значение';
+  xAxisLabel = 'Тип дохода';
+  yAxisLabel = 'Сумма (₽)';
   gradient = false;
 
   // Красная схема
@@ -33,6 +27,6 @@ export class IncomeChartComponent {
     name: 'red',
     selectable: true,
     group: ScaleType.Ordinal,
-    domain: ['#ff4d4f'] // красный цвет столбцов
+    domain: ['#ff4d4f', '#ff7875'] // красный цвет столбцов
   };
 }
