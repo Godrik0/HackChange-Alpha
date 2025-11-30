@@ -9,6 +9,10 @@
 - Насибуллин Никита - Data-analyst
 - Карпов Роман - Frontend-developer
 
+## 🎥 Демонстрация
+
+[Видео демонстрация проекта](https://drive.google.com/drive/folders/1dWms8OOa34FatoIuJT6Mycq_WxXscKp2?usp=sharing)
+
 ---
 
 ## 📁 Структура проекта
