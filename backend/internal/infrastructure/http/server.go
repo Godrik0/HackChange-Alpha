@@ -13,6 +13,7 @@ import (
 	"github.com/Godrik0/HackChange-Alpha/backend/internal/infrastructure/http/middleware"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -47,6 +48,16 @@ func NewServer(cfg *config.Config, clientHandler *handlers.ClientHandler, logger
 func (s *Server) setupRouter() {
 	r := chi.NewRouter()
 
+	// CORS middleware
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:5173", "http://localhost:8080"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
+
 	r.Use(chimiddleware.RequestID)
 	r.Use(chimiddleware.RealIP)
 	r.Use(middleware.Recovery(s.logger))
@@ -60,8 +71,8 @@ func (s *Server) setupRouter() {
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/clients", func(r chi.Router) {
 			r.Get("/", s.clientHandler.ListClients)
-			r.Get("/search", s.clientHandler.SearchClients)
 			r.Post("/", s.clientHandler.CreateClient)
+			r.Get("/search", s.clientHandler.SearchClients)
 			r.Post("/import", s.clientHandler.ImportClientsCSV)
 			r.Get("/{id}", s.clientHandler.GetClient)
 			r.Put("/{id}", s.clientHandler.UpdateClient)

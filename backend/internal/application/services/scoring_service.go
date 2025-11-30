@@ -49,7 +49,6 @@ func (s *scoringService) CalculateScoring(ctx context.Context, id int64) (*dto.S
 		return nil, fmt.Errorf("failed to extract features: %w", err)
 	}
 
-	// Дополняем features до 221 поля, если их меньше
 	features = EnsureAllFeatures(features)
 	s.logger.Debug("Features after ensuring all 221 fields", "feature_count", len(features))
 

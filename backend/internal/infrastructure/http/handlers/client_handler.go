@@ -327,7 +327,7 @@ func (h *ClientHandler) ListClients(w http.ResponseWriter, r *http.Request) {
 func (h *ClientHandler) ImportClientsCSV(w http.ResponseWriter, r *http.Request) {
 	// Ограничение размера файла (10MB)
 	r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
-	
+
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
 		h.logger.Error("Failed to parse multipart form", "error", err)
 		h.respondError(w, http.StatusBadRequest, "file too large or invalid form data")
@@ -363,14 +363,14 @@ func (h *ClientHandler) ImportClientsCSV(w http.ResponseWriter, r *http.Request)
 	var errors []string
 
 	lineNum := 1 // Начинаем с 1 (заголовки)
-	
+
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {
 			break
 		}
 		lineNum++
-		
+
 		if err != nil {
 			h.logger.Warn("Failed to read CSV line", "line", lineNum, "error", err)
 			errors = append(errors, fmt.Sprintf("Line %d: %v", lineNum, err))
@@ -453,7 +453,7 @@ func (h *ClientHandler) parseClientFromCSVRow(row map[string]string, headers []s
 
 	var birthDate time.Time
 	var parseErr error
-	
+
 	// Пробуем разные форматы
 	formats := []string{"02-01-2006", "2006-01-02", "02/01/2006", "2006/01/02"}
 	for _, format := range formats {
@@ -462,11 +462,11 @@ func (h *ClientHandler) parseClientFromCSVRow(row map[string]string, headers []s
 			break
 		}
 	}
-	
+
 	if parseErr != nil {
 		return nil, fmt.Errorf("invalid birth_date format: %s (expected DD-MM-YYYY or YYYY-MM-DD)", birthDateStr)
 	}
-	
+
 	req.BirthDate = birthDate.Format(dto.DateFormat)
 
 	// Опциональные поля
@@ -476,7 +476,7 @@ func (h *ClientHandler) parseClientFromCSVRow(row map[string]string, headers []s
 
 	// Собираем все дополнительные поля как features
 	features := make(map[string]interface{})
-	
+
 	// Список базовых полей, которые не должны попасть в features
 	baseFields := map[string]bool{
 		"first_name":  true,

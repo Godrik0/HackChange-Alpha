@@ -1,6 +1,5 @@
 package services
 
-// RequiredFeatures - список всех 221 фичи, которые ожидает ML модель
 var RequiredFeatures = []string{
 	"turn_cur_cr_avg_act_v2",
 	"salary_6to12m_avg",
@@ -226,16 +225,13 @@ func EnsureAllFeatures(features map[string]interface{}) map[string]interface{} {
 		features = make(map[string]interface{})
 	}
 
-	// Создаем копию чтобы не мутировать оригинал
 	result := make(map[string]interface{})
 	for k, v := range features {
 		result[k] = v
 	}
 
-	// Заполняем отсутствующие поля дефолтными значениями
 	for _, field := range RequiredFeatures {
 		if _, exists := result[field]; !exists {
-			// Для категориальных и флаговых полей используем 0
 			result[field] = 0.0
 		}
 	}

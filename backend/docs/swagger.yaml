@@ -306,6 +306,38 @@ paths:
       summary: Расчет ML-скоринга
       tags:
       - scoring
+  /api/clients/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 'Загружает клиентов из CSV файла. Поддерживает две схемы: простую
+        (first_name,last_name,birth_date,...) и полную (с features в JSON). Формат
+        даты: DD-MM-YYYY или YYYY-MM-DD'
+      parameters:
+      - description: CSV файл с данными клиентов
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Результат импорта с количеством успешных/неудачных записей
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Импорт клиентов из CSV
+      tags:
+      - clients
   /api/clients/search:
     get:
       description: 'Поиск по ФИО и дате рождения (формат даты: DD-MM-YYYY). Требуется
