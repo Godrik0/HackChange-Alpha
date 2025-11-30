@@ -62,6 +62,7 @@ func (s *Server) setupRouter() {
 			r.Get("/", s.clientHandler.ListClients)
 			r.Get("/search", s.clientHandler.SearchClients)
 			r.Post("/", s.clientHandler.CreateClient)
+			r.Post("/import", s.clientHandler.ImportClientsCSV)
 			r.Get("/{id}", s.clientHandler.GetClient)
 			r.Put("/{id}", s.clientHandler.UpdateClient)
 			r.Delete("/{id}", s.clientHandler.DeleteClient)

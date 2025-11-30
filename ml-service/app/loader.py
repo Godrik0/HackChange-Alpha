@@ -6,9 +6,26 @@ from contextlib import asynccontextmanager
 from .config import settings
 from .utils import logger
 
+# Используем словарь чтобы обойти проблему с импортом глобальных переменных
+_state = {
+    'model': None,
+    'is_loaded': False,
+    'load_time': None
+}
+
 MODEL = None
 IS_LOADED = False
 LOAD_TIME = None
+
+
+def is_model_loaded():
+    """Проверка, загружена ли модель"""
+    return _state['is_loaded']
+
+
+def get_model():
+    """Получить загруженную модель"""
+    return _state['model']
 
 
 def load_assets(model_path=None):
@@ -25,6 +42,7 @@ def load_assets(model_path=None):
 
         with open(model_path, 'rb') as f:
             MODEL = dill.load(f)
+            _state['model'] = MODEL
 
         logger.info(f"Pipeline loaded from {model_path}")
 
@@ -34,12 +52,15 @@ def load_assets(model_path=None):
             logger.info(f"Model type: {type(MODEL).__name__}")
 
         IS_LOADED = True
+        _state['is_loaded'] = True
         LOAD_TIME = time() - start
+        _state['load_time'] = LOAD_TIME
         logger.info(f"Assets loaded in {LOAD_TIME:.2f}s")
 
     except Exception as e:
         logger.exception(f"Failed to load pipeline: {e}")
         IS_LOADED = False
+        _state['is_loaded'] = False
 
 
 @asynccontextmanager

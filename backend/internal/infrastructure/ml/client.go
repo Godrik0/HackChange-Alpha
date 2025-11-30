@@ -80,27 +80,34 @@ func (c *mlClient) PredictWithExplanation(ctx context.Context, features map[stri
 		Features:        features,
 		UserID:          userID,
 	}
+	c.logger.Info("[ML REQUEST] Preparing request", "model_version", c.modelVersion, "pipeline_version", c.pipelineVersion, "features_count", len(features))
+
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		c.logger.Error("Failed to marshal prediction request", "error", err)
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	url := fmt.Sprintf("%s/api/predict", c.baseURL)
+	url := fmt.Sprintf("%s/predict", c.baseURL)
+	c.logger.Info("[ML REQUEST] Sending POST request", "url", url, "base_url", c.baseURL, "payload_size", len(jsonData))
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(jsonData))
 	if err != nil {
-		c.logger.Error("Failed to create HTTP request", "error", err)
+		c.logger.Error("Failed to create HTTP request", "error", err, "url", url)
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
+	c.logger.Info("[ML REQUEST] Executing HTTP request", "method", "POST", "url", url)
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		c.logger.Error("Failed to execute ML prediction request", "error", err)
+		c.logger.Error("Failed to execute ML prediction request", "error", err, "url", url)
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
 	defer resp.Body.Close()
+
+	c.logger.Info("[ML RESPONSE] Received response", "status_code", resp.StatusCode, "url", url)
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
