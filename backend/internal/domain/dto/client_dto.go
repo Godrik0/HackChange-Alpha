@@ -83,7 +83,7 @@ func FromModel(client *models.Client) (*ClientResponse, error) {
 	if len(client.Features) > 0 {
 		var features map[string]interface{}
 		if err := json.Unmarshal(client.Features, &features); err == nil {
-			if income, ok := features["income"].(float64); ok {
+			if income, ok := features["incomeValue"].(float64); ok {
 				response.Income = int64(income)
 			}
 		}

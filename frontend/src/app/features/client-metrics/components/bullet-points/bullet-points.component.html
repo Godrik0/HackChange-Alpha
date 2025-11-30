@@ -1,14 +1,24 @@
 <nz-flex nzGap="middle" nzVertical>
   <nz-splitter>
     <nz-splitter-panel nzResizable="false">
-      <ul>
-        <li *ngFor="let point of points" class="points-splitter">{{ point }}</li>
-      </ul>
+      <span style="font-weight: bold; color: #52c41a;">Позитивные факторы</span>
+      @if (points.positive_factors && points.positive_factors.length > 0) {
+        <ul>
+          <li *ngFor="let point of points.positive_factors" class="points-splitter">{{ point }}</li>
+        </ul>
+      } @else {
+        <p nz-typography nzType="secondary">Нет данных</p>
+      }
     </nz-splitter-panel>
     <nz-splitter-panel>
-      <ul>
-        <li *ngFor="let point of points" class="points-splitter">{{ point }}</li>
-      </ul>
+      <span style="font-weight: bold; color: #ff4d4f;">Негативные факторы</span>
+      @if (points.negative_factors && points.negative_factors.length > 0) {
+        <ul>
+          <li *ngFor="let point of points.negative_factors" class="points-splitter">{{ point }}</li>
+        </ul>
+      } @else {
+        <p nz-typography nzType="secondary">>Нет данных</p>
+      }
     </nz-splitter-panel>
   </nz-splitter>
 </nz-flex>

@@ -1,6 +1,6 @@
 import {Client} from "@core/models/client";
-import {never} from "rxjs";
 
-export function getFullName(client: Client) {
-  return `${client.lastName} ${client.firstName} ${client.middleName}`;
+export function getFullName(client: Client): string {
+  if (client.middle_name) return `${client.last_name} ${client.first_name} ${client.middle_name}`;
+  return `${client.last_name} ${client.first_name}`
 }

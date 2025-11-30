@@ -11,7 +11,11 @@ import {IncomeChartComponent} from "@features/client-metrics/components/income-c
   imports: [
     CommonModule,
     RouterModule.forChild([
-      {path: 'client/:id', component: ClientMetricsComponent},
+      {
+        path: 'client/:id', 
+        component: ClientMetricsComponent,
+        runGuardsAndResolvers: 'always'
+      },
     ]),
     ClientMetricsComponent,
     IncomeChartComponent

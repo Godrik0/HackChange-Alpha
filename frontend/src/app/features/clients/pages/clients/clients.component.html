@@ -5,7 +5,9 @@
 
   <nz-content class="content-wrapper">
     <nz-flex nzVertical="true" nzGap="middle">
-      <h1>Клиенты</h1>
+      <span style="font-weight: 700; font-size: 30px;">
+        Клиенты
+      </span>
 
       <nz-flex
         nzJustify="space-between"
@@ -16,7 +18,6 @@
             placeholder="Search"
             nzSize="large"
             [(ngModel)]="inputValue"
-            (input)="onChange($event)"
           />
         </nz-input-search>
 
@@ -30,7 +31,7 @@
 
       @if (!displayedClientsIsEmpty) {
         <nz-card *ngFor="let client of displayedClients">
-          <app-client-line [client]="client"/>
+          <app-client-line [client]="client" />
         </nz-card>
       } @else {
         <nz-empty nzNotFoundContent="No data"/>
